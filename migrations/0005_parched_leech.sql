@@ -1,0 +1,1 @@
+ALTER TABLE "subscriptions" DROP CONSTRAINT "renewal_date_validity_check";
