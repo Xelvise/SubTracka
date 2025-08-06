@@ -27,7 +27,7 @@ export const users = pgTable("users", {
     jwtRefreshToken: text("jwt_refresh_token"),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" }).notNull().$onUpdateFn(() => sql`NOW()`),
-});
+})
 
 // prettier-ignore
 export const subscriptions = pgTable(
@@ -46,8 +46,9 @@ export const subscriptions = pgTable(
         nextRenewalDate: date("renewal_date"),
         createdAt: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull().defaultNow(),
         updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" }).notNull().$onUpdateFn(() => sql`NOW()`),
+        workflowRunId: text("worflow_run_id")
     },
-    () => [check("start_date_validity_check", sql`start_date <= CURRENT_DATE`)]
+    () => [check("start_date_validity_check", sql`start_date >= CURRENT_DATE`)]
 );
 
 export const userRelations = relations(users, ({ many }) => ({

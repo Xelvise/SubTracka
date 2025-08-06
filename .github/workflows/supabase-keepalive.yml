@@ -1,0 +1,39 @@
+# .github/workflows/supabase-keepalive.yml
+name: Keep Supabase Database Active
+
+on:
+    schedule:
+        # Runs every 6 days at 10:00 UTC (well within the 7-day limit)
+        - cron: "0 10 */6 * *"
+    workflow_dispatch: # Allows manual triggering for testing
+
+jobs:
+    ping-database:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Ping Supabase Database
+              env:
+                  SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+                  SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+              run: |
+                  # Simple ping using curl to make a database request
+                  response=$(curl -s -o /dev/null -w "%{http_code}" \
+                    -H "apikey: $SUPABASE_ANON_KEY" \
+                    -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+                    "$SUPABASE_URL/rest/v1/users")
+
+                  if [ "$response" -eq 200 ] || [ "$response" -eq 404 ]; then
+                    echo "✅ Database ping successful (HTTP $response)"
+                  else
+                    echo "❌ Database ping failed (HTTP $response)"
+                    exit 1
+                  fi
+
+            - name: Log activity
+              run: |
+                  echo "🏓 Supabase database pinged at $(date)"
+                  echo "Next scheduled ping: $(date -d '+6 days')"

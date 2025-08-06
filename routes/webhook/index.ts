@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { sendReminders } from "./controllers";
+import { reminderScheduler, sendEmail } from "./controllers";
 import { requiredBodyValidator, validationResultHandler, verifyWebhook } from "../../utils/middlewares";
 import { body } from "express-validator";
 const route = Router();
@@ -16,7 +16,22 @@ route.post(
         validationResultHandler,
     ],
     verifyWebhook,
-    sendReminders
+    reminderScheduler
+);
+
+route.post(
+    "/subscription/send-email",
+    [
+        requiredBodyValidator,
+        body("info")
+            .exists({ values: "falsy" })
+            .withMessage("Body info is required")
+            .isJSON()
+            .withMessage("Invalid info"),
+        validationResultHandler,
+    ],
+    verifyWebhook,
+    sendEmail
 );
 
 export default route;

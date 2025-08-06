@@ -3,15 +3,16 @@ import { verifyJWT } from "../../utils/middlewares";
 import { validationResultHandler } from "../../utils/middlewares";
 import { requiredBodyValidator } from "../../utils/middlewares";
 // prettier-ignore
-import { createSubscription, fetchSingleSubscription, fetchUserSubscriptions, updateSubscription } from "./controllers";
+import { cancelSubscription, createSubscription, deleteSubscription, fetchSingleSubscription, fetchUpcomingSubRenewals, fetchUserSubscriptions, updateSubscription } from "./controllers";
 import { body, query } from "express-validator";
 const route = Router();
 
 route.get(
     "/",
     [
-        query("orderBy", "Invalid orderBy param").isIn(["price", "startDate", "nextRenewalDate"]),
-        query("sort", "Invalid sort param").isIn(["asc", "desc"]),
+        query("orderBy", "Invalid orderBy param").optional().isIn(["price", "startDate", "nextRenewalDate"]),
+        query("sort", "Invalid sort param").optional().isIn(["asc", "desc"]),
+        query("status", "Invalid status param").optional().isIn(["active", "expired", "cancelled"]),
     ],
     verifyJWT,
     fetchUserSubscriptions
@@ -83,10 +84,10 @@ route.put(
     updateSubscription
 );
 
-// route.delete("/:id"); // delete subscription
+route.delete("/:id", verifyJWT, deleteSubscription); // delete subscription
 
-// route.put("/:id/cancel"); // cancel subscription
+route.put("/:id/cancel", verifyJWT, cancelSubscription); // cancel subscription
 
-// route.post("/upcoming-renewals"); // get upcoming renewals
+route.get("/upcoming-renewals", verifyJWT, fetchUpcomingSubRenewals); // get upcoming renewals
 
 export default route;

@@ -2,8 +2,8 @@ import transporter from "../clients/nodemailer";
 import { emailTemplates } from "./constants.js";
 import dayjs from "dayjs";
 import { Duration } from "@upstash/workflow";
-import { subscriptions } from "../migrations/schema";
-import { users } from "../migrations/schema";
+import { subscriptions } from "../db/schema";
+import { users } from "../db/schema";
 import { CustomError } from "../routes/error";
 
 interface PasswordResetEmail {

@@ -1,12 +1,12 @@
 import { Request, Response, NextFunction } from "express";
-import { db, users } from "../../clients/db";
+import { db, users } from "../../db";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { and, eq, or } from "drizzle-orm";
-import { sendPasswordResetEmail } from "../../utils/email-generators";
 import crypto from "crypto";
 import type { StringValue } from "ms";
 import { config } from "dotenv";
+import { qstashClient } from "../../clients/qstash";
 config({ path: `.env.${process.env.NODE_ENV || "dev"}` });
 
 if (!process.env.JWT_SECRET) throw new Error("JWT secret is missing");
@@ -150,7 +150,6 @@ export const initiatePasswordReset = async (req: Request, res: Response, next: N
             return;
         }
         const resetToken = crypto.randomBytes(16).toString("hex");
-        sendPasswordResetEmail({ email: user.email, token: resetToken, userId: user.id, expiry: "30m" });
         await db
             .update(users)
             .set({
@@ -158,6 +157,15 @@ export const initiatePasswordReset = async (req: Request, res: Response, next: N
                 passwordResetTokenExpiry: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
             })
             .where(eq(users.id, user.id));
+
+        // Schedule password reset email
+        await qstashClient.publishJSON({
+            url: req.protocol + "://" + req.headers.host + "/api/v1/webhooks/subscription/send-email",
+            body: {
+                type: "password-reset",
+                info: { email: user.email, token: resetToken, userId: user.id, expiry: "30m" },
+            },
+        });
         res.status(200).json({ message: "A password reset link has been sent to your email address" });
     } catch (error) {
         next(error);

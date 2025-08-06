@@ -1,10 +1,11 @@
+import serverless from "serverless-http";
 import express from "express";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth";
 import userRoutes from "./routes/user";
 import subRoutes from "./routes/subscription";
-import workflowRoutes from "./routes/workflows";
-import errorMiddlewares from "./routes/error";
+import webhookRoutes from "./routes/webhook";
+import errorHandlers from "./routes/error";
 import { config } from "dotenv";
 import rateLimiter from "./utils/ratelimiter";
 const env = process.env.NODE_ENV || "dev";
@@ -34,8 +35,12 @@ app.use(rateLimiter);
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/subscriptions", subRoutes);
-app.use("/api/v1/workflows", workflowRoutes);
-app.use(errorMiddlewares);
+app.use("/api/v1/webhooks", webhookRoutes);
+app.use(errorHandlers);
 
-const port = Number(process.env.SERVER_PORT) || 3000;
-app.listen(port, "0.0.0.0", () => console.log(`${env} server is running on port ${port}`));
+if (env === "dev") {
+    const port = Number(process.env.SERVER_PORT) || 3000;
+    app.listen(port, () => console.log(`${env} server is running on port ${port}`));
+} else {
+    module.exports.handler = serverless(app);
+}

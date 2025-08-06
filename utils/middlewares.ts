@@ -52,6 +52,11 @@ export const verifyJWT = async (req: Request, res: Response, next: NextFunction)
 
 export const verifyWebhook = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const env = process.env.NODE_ENV || "dev";
+        if (env === "dev") {
+            next();
+            return;
+        }
         const status = await qstashReceiver.verify({
             signature: req.headers["upstash-signature"] as string,
             body: req.body,
