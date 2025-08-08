@@ -27,11 +27,12 @@ app.use((_, res, next) => {
     next();
 });
 
+app.use(rateLimiter);
+
 app.get("/hello", (_, res) => {
-    res.status(200).json({ message: "Welcome to Elvis' Subscription tracker API. I hope you have fun using it" });
+    res.status(200).json({ message: "Welcome to SubTracker API. I hope you have fun using it" });
 });
 
-app.use(rateLimiter);
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/subscriptions", subRoutes);

@@ -11,12 +11,12 @@ interface Payload {
     subId: string;
 }
 
-export const reminderScheduler = serve<Payload>(async workflow => {
-    const { subId } = workflow.requestPayload;
+export const reminderScheduler = serve<Payload>(async context => {
+    const { subId } = context.requestPayload;
     console.log("Workflow has started");
 
     // Retrieve subscription info
-    const subscription = await workflow.run("Step 1: get subscription", () => {
+    const subscription = await context.run("Step 1: get subscription", () => {
         return db.query.subscriptions.findFirst({
             with: { user: { columns: { username: true, email: true } } },
             where: eq(subscriptions.id, subId),
@@ -37,12 +37,12 @@ export const reminderScheduler = serve<Payload>(async workflow => {
         if (reminderDate.isAfter(dayjs(), "day")) {
             const remainingDays = reminderDate.diff(dayjs(), "day");
             console.log(`${remainingDays} days until trigger of reminder`);
-            await workflow.sleepUntil(`Reminder in ${remainingDays} days from now`, reminderDate.toDate());
+            await context.sleepUntil(`Reminder in ${remainingDays} days from now`, reminderDate.toDate());
             return;
         }
         // Trigger reminder, if reminder date is same as current date
         if (reminderDate.isSame(dayjs(), "day")) {
-            await workflow.run("Step 2: send reminder", () => {
+            await context.run("Step 2: send reminder", () => {
                 sendReminderEmail({
                     recipientEmail: subscription.user.email,
                     tag: "day " + daysBefore,
@@ -58,4 +58,5 @@ export const reminderScheduler = serve<Payload>(async workflow => {
 export const sendEmail = async (req: Request, res: Response, next: NextFunction) => {
     const { type, info } = req.body;
     // TODO...
+    res.status(200).json({ message: "Webhook function hasn't been implemented yet" });
 };

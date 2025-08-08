@@ -5,7 +5,7 @@ provider:
     stage: prod
     region: eu-north-1
     runtime: nodejs20.x
-    memorySize: 512 # 512MB
+    memorySize: 1792 # 1792mb - proportional to 1vCPU (1 logical core)
     timeout: 10 # 10 seconds
     iam:
         role:

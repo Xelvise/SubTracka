@@ -14,7 +14,7 @@ if (env === "prod" && !QSTASH_NEXT_SIGNING_KEY) throw new Error("QStash next sig
 export const workflowClient = new WorkflowClient({
     baseUrl: QSTASH_URL,
     token: QSTASH_TOKEN,
-    headers: { "content-type": "application/json" },
+    headers: { "Content-Type": "application/json" },
 });
 
 export const qstashClient = new QstashClient({

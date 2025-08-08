@@ -12,17 +12,17 @@ if (env === "prod") {
     if (!process.env.UPSTASH_REDIS_URL) throw new Error("Upstash Redis URL is required");
     if (!process.env.UPSTASH_REDIS_TOKEN) throw new Error("Upstash Redis Token is required");
 
-    // Initialize Upstash Redis client
-    const client = new Redis({
+    // Initialize Upstash Redis for storage
+    const storage = new Redis({
         url: process.env.UPSTASH_REDIS_URL,
         token: process.env.UPSTASH_REDIS_TOKEN,
     });
 
-    // Enforce delay up to (60/5 = 10)sec between concurrent requests, unless defined otherwise
+    // Enforce delay up to (60/5 = 12)sec between concurrent requests, unless defined otherwise
     const limit = Number(process.env.LIMIT) || 5;
     const window = (process.env.WINDOW || "60s") as Duration;
     const ratelimit = new Ratelimit({
-        redis: client,
+        redis: storage,
         limiter: Ratelimit.slidingWindow(limit, window),
         analytics: true,
     });

@@ -3,8 +3,7 @@ name: Ping Supabase
 
 on:
     schedule:
-        # Runs every 6 days at 10:00 UTC (well within the 7-day limit)
-        - cron: "0 10 */6 * *"
+        - cron: "0 12 */5 * *"
     workflow_dispatch: # Allows manual triggering for testing
 
 jobs:
@@ -12,9 +11,6 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-
             - name: Ping Supabase Database
               env:
                   SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -36,4 +32,4 @@ jobs:
             - name: Log activity
               run: |
                   echo "🏓 Supabase database pinged at $(date)"
-                  echo "Next scheduled ping: $(date -d '+6 days')"
+                  echo "Next scheduled ping: $(date -d '+5 days')"
