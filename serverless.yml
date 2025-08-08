@@ -1,7 +1,5 @@
 service: subscription-tracker
 
-frameworkVersion: "4"
-
 provider:
     name: aws
     stage: prod
