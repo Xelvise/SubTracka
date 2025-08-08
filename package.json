@@ -4,9 +4,8 @@
     "description": "a Subscription tracker",
     "main": "dist/app.js",
     "scripts": {
-        "build": "tsc",
         "dev": "NODE_ENV=dev NODE_OPTIONS='--no-deprecation=DEP0040' nodemon --exec tsx app.ts",
-        "prod": "NODE_ENV=prod node dist/app.js",
+        "prod": "tsc && NODE_ENV=prod node dist/app.js",
         "qstash:local": "NODE_OPTIONS='--dns-result-order=ipv4first' npx @upstash/qstash-cli dev --port 8081",
         "docker_compose_up": "mkdir -p pgdata && sudo chown -R $USER:$USER pgdata && sudo chmod -R 777 pgdata && docker compose --env-file .env.dev up",
         "introspect_db": "npx drizzle-kit pull",

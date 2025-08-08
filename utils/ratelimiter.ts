@@ -4,7 +4,7 @@ import { config } from "dotenv";
 import { RequestHandler } from "express";
 import { rateLimit, ipKeyGenerator } from "express-rate-limit";
 const env = process.env.NODE_ENV || "dev";
-config({ path: `.env.${env}` });
+config({ path: [`.env.${env}`, ".env"] });
 
 let rateLimitMiddleware: RequestHandler;
 
@@ -18,7 +18,7 @@ if (env === "prod") {
         token: process.env.UPSTASH_REDIS_TOKEN,
     });
 
-    // Enforce delay up to (60/5 = 10)sec per concurrent request, unless defined otherwise
+    // Enforce delay up to (60/5 = 10)sec between concurrent requests, unless defined otherwise
     const limit = Number(process.env.LIMIT) || 5;
     const window = (process.env.WINDOW || "60s") as Duration;
     const ratelimit = new Ratelimit({
@@ -40,7 +40,7 @@ if (env === "prod") {
 } else {
     rateLimitMiddleware = rateLimit({
         windowMs: 60 * 1000, // 60 seconds
-        limit: 10, // Enforces delay up to (60/10 = 6)sec per concurrent request
+        limit: 10, // Enforces delay up to (60/10 = 6)sec between concurrent request
         message: "Too many requests, please try again later.",
         standardHeaders: true,
         legacyHeaders: false,

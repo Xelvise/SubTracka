@@ -1,14 +1,45 @@
-# "service" is the name of this project. This will also be added to your AWS resource names.
 service: subscription-tracker
 
 frameworkVersion: "4"
 
 provider:
     name: aws
+    stage: prod
+    region: eu-north-1
     runtime: nodejs20.x
+    memorySize: 512 # 512MB
+    timeout: 10 # 10 seconds
+    iam:
+        role:
+            statements:
+                - Effect: Allow
+                  Action:
+                      - ssm:GetParameter
+                  Resource:
+                      - "arn:aws:ssm:${aws:region}:${aws:accountId}:parameter/sub-tracker/*"
+
+plugins:
+    - serverless-plugin-typescript
 
 functions:
     api:
-        handler: handler.handler
+        name: SubTracker
+        handler: app.handler
         events:
-            - httpApi: "*"
+            - httpApi: "*" # API Gateway trigger
+        environment:
+            NODE_ENV: prod
+            UPSTASH_REDIS_URL: ${ssm:/sub-tracker/upstash_redis_url}
+            UPSTASH_REDIS_TOKEN: ${ssm:/sub-tracker/upstash_redis_token}
+            LIMIT: ${ssm:/sub-tracker/rate-limit/limit}
+            WINDOW: ${ssm:/sub-tracker/rate-limit/window}
+            JWT_SECRET: ${ssm:/sub-tracker/jwt_secret}
+            JWT_REFRESH_SECRET: ${ssm:/sub-tracker/jwt_refresh_secret}
+            JWT_EXPIRY: ${ssm:/sub-tracker/jwt_expiry}
+            DATABASE_URL: ${ssm:/sub-tracker/database_url}
+            QSTASH_URL: ${ssm:/sub-tracker/qstash_url}
+            QSTASH_TOKEN: ${ssm:/sub-tracker/qstash_token}
+            QSTASH_CURRENT_SIGNING_KEY: ${ssm:/sub-tracker/qstash_current_signing_key}
+            QSTASH_NEXT_SIGNING_KEY: ${ssm:/sub-tracker/qstash_next_signing_key}
+            GMAIL_USER: ${ssm:/sub-tracker/gmail_user}
+            GMAIL_PASSWORD: ${ssm:/sub-tracker/gmail_password}

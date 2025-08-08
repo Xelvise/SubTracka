@@ -1,5 +1,5 @@
 # .github/workflows/supabase-keepalive.yml
-name: Keep Supabase Database Active
+name: Ping Supabase
 
 on:
     schedule:
