@@ -1,5 +1,4 @@
-# .github/workflows/supabase-keepalive.yml
-name: Ping Upstash Redis store every 14 days
+name: Ping Upstash Redis store
 
 on:
     schedule:
@@ -11,9 +10,14 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-            - name: Ping Upstash Redis
+            - name: Ping Upstash Redis store
+              env:
+                  TOKEN: ${{ secrets.UPSTASH_REDIS_TOKEN }}
               run: |
-                  response=$(curl -s -o /dev/null -w "%{http_code}" https://3g1qv6s6fg.execute-api.eu-north-1.amazonaws.com/hello)
+                  response=$(curl -s -o /dev/null -w "%{http_code}" \
+                    https://lenient-worm-24059.upstash.io/set/ip \
+                    -H "Authorization: Bearer $TOKEN" \
+                    -d '"$(uuidgen | tr -d '-')"')
 
                   if [ "$response" -eq 200 ] || [ "$response" -eq 404 ]; then
                     echo "✅ Upstash Redis ping successful (HTTP $response)"
