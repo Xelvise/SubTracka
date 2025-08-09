@@ -29,7 +29,7 @@ app.use((_, res, next) => {
 
 app.use(rateLimiter);
 
-app.get("/hello", (_, res) => {
+app.get("/", (_, res) => {
     res.status(200).json({ message: "Welcome to SubTracker API. I hope you have fun using it" });
 });
 

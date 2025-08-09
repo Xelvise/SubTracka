@@ -15,7 +15,7 @@ export const reminderScheduler = serve<Payload>(async context => {
     const { subId } = context.requestPayload;
     console.log("Workflow has started");
 
-    // Retrieve subscription info
+    // Retrieve subscription info along with its creator
     const subscription = await context.run("Step 1: get subscription", () => {
         return db.query.subscriptions.findFirst({
             with: { user: { columns: { username: true, email: true } } },
@@ -58,5 +58,5 @@ export const reminderScheduler = serve<Payload>(async context => {
 export const sendEmail = async (req: Request, res: Response, next: NextFunction) => {
     const { type, info } = req.body;
     // TODO...
-    res.status(200).json({ message: "Webhook function hasn't been implemented yet" });
+    res.status(200).json({ message: "Oops, Webhook function hasn't been implemented yet" });
 };

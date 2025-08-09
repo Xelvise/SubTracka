@@ -9,7 +9,7 @@ if (!connectionString) throw new Error("Database URL is missing");
 
 // Open a TCP socket to POSTGRES_HOST
 const client = postgres(connectionString, { prepare: false });
-export const db = drizzle(client, { schema, logger: true });
+export const db = drizzle(client, { schema });
 
 // Re-export all schema for convenience
 export * from "./schema";

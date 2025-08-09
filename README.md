@@ -55,7 +55,7 @@ The application is deployed as a serverless function on AWS Lambda. You can test
 
 **Base URL**: `https://3g1qv6s6fg.execute-api.eu-north-1.amazonaws.com/`
 
-Give it a quick try by calling the [hello](https://3g1qv6s6fg.execute-api.eu-north-1.amazonaws.com/hello) endpoint
+Give it a quick try [here](https://3g1qv6s6fg.execute-api.eu-north-1.amazonaws.com)
 
 ## 📋 Prerequisites
 
