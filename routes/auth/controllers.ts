@@ -39,6 +39,14 @@ export const initiateSignup = async (req: Request, res: Response, next: NextFunc
             createdAt: users.createdAt,
             updatedAt: users.updatedAt,
         });
+        // Schedule Welcome email
+        await qstashClient.publishJSON({
+            url: req.protocol + "://" + req.headers.host + "/api/v1/webhooks/subscription/send-email",
+            body: {
+                type: "welcome",
+                info: { email: user.email, username: user.username },
+            },
+        });
         res.status(201).json({ message: "User created successfully", data: user });
     } catch (error) {
         next(error);
@@ -163,7 +171,11 @@ export const initiatePasswordReset = async (req: Request, res: Response, next: N
             url: req.protocol + "://" + req.headers.host + "/api/v1/webhooks/subscription/send-email",
             body: {
                 type: "password-reset",
-                info: { email: user.email, token: resetToken, userId: user.id, expiry: "30m" },
+                info: {
+                    email: user.email,
+                    resetURL: `${req.protocol}://${req.headers.host}/api/v1/auth/${user.id}/password/reset/${resetToken}`,
+                    expiry: "30 minutes",
+                },
             },
         });
         res.status(200).json({ message: "A password reset link has been sent to your email address" });
@@ -174,10 +186,10 @@ export const initiatePasswordReset = async (req: Request, res: Response, next: N
 
 export const resetPassword = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { id, resetToken } = req.params;
+        const { userId, resetToken } = req.params;
         const user = await db.query.users.findFirst({
             columns: { id: true, passwordResetToken: true, passwordResetTokenExpiry: true },
-            where: eq(users.id, id),
+            where: eq(users.id, userId),
         });
         if (!user) {
             res.status(404).json({ message: "User not found" });

@@ -23,6 +23,11 @@ route.post(
     "/subscription/send-email",
     [
         requiredBodyValidator,
+        body("type")
+            .exists({ values: "falsy" })
+            .withMessage("Type is required")
+            .isIn(["password-reset", "welcome"])
+            .withMessage("Invalid type"),
         body("info")
             .exists({ values: "falsy" })
             .withMessage("Body info is required")

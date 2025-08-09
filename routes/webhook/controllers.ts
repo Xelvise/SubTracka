@@ -3,8 +3,8 @@ import { serve } from "@upstash/workflow/express";
 import { db, subscriptions } from "../../db";
 import { eq } from "drizzle-orm";
 import dayjs from "dayjs";
-import { dayIntervals } from "../../utils/constants";
-import { sendReminderEmail } from "../../utils/email-generators";
+import { dayIntervals } from "../../email/constants";
+import { sendReminderEmail, sendPasswordResetEmail, sendWelcomeEmail } from "../../email/handlers";
 
 interface Payload {
     [key: string]: any;
@@ -23,9 +23,11 @@ export const reminderScheduler = serve<Payload>(async context => {
         });
     });
 
-    // Verify that subscription exists
+    // Continue execution only if subscription exists
     if (!subscription) return;
     const renewalDate = dayjs(subscription.nextRenewalDate);
+
+    // TODO: Send an email acknowledging subscription has been created
 
     dayIntervals.forEach(async daysBefore => {
         const reminderDate = renewalDate.subtract(daysBefore, "day");
@@ -55,8 +57,28 @@ export const reminderScheduler = serve<Payload>(async context => {
     });
 });
 
-export const sendEmail = async (req: Request, res: Response, next: NextFunction) => {
-    const { type, info } = req.body;
-    // TODO...
-    res.status(200).json({ message: "Oops, Webhook function hasn't been implemented yet" });
+export const sendEmail = (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { type, info } = req.body as { type: string; info: { [key: string]: string } };
+
+        if (type === "password-reset") {
+            const { email: recipientEmail, resetURL, expiry = "30m" } = info;
+            if (!recipientEmail || !resetURL) {
+                res.status(400).json({ message: "Invalid info" });
+                return;
+            }
+            sendPasswordResetEmail({ recipientEmail, resetURL, expiry });
+        }
+        if (type === "welcome") {
+            const { email: recipientEmail, username } = info;
+            if (!recipientEmail || !username) {
+                res.status(400).json({ message: "Invalid info" });
+                return;
+            }
+            sendWelcomeEmail({ recipientEmail, username });
+        }
+        res.status(200).json({ message: "Email sent successfully" });
+    } catch (error) {
+        next(error);
+    }
 };

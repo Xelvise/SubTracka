@@ -79,7 +79,7 @@ route.post(
 );
 
 route.post(
-    "/:id/password/reset/:resetToken",
+    "/:userId/password/reset/:resetToken",
     [
         requiredBodyValidator,
         body("new_password")
