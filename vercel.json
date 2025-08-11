@@ -1,0 +1,15 @@
+{
+    "$schema": "https://openapi.vercel.sh/vercel.json",
+
+    "rewrites": [{ "source": "/(.*)", "destination": "/api" }],
+
+    "functions": {
+        "api/index.js": {
+            "runtime": "nodejs",
+            "memory": 1024,
+            "maxDuration": 30
+        }
+    },
+
+    "crons": []
+}

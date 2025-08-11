@@ -25,11 +25,11 @@ plugins:
 functions:
     api:
         name: SubTracker
-        handler: ./src/app.handler
+        handler: ./api/index.handler
         events:
             - httpApi: "*" # API Gateway trigger
         environment:
-            NODE_ENV: prod
+            NODE_ENV: aws
             UPSTASH_REDIS_URL: ${ssm:/sub-tracker/upstash_redis_url}
             UPSTASH_REDIS_TOKEN: ${ssm:/sub-tracker/upstash_redis_token}
             LIMIT: ${ssm:/sub-tracker/rate-limit/limit}

@@ -4,6 +4,7 @@
     "description": "a Subscription tracker",
     "main": "dist/app.js",
     "scripts": {
+        "build": "tsc",
         "dev": "NODE_ENV=dev NODE_OPTIONS='--no-deprecation=DEP0040' nodemon --exec tsx src/app.ts",
         "prod": "NODE_ENV=prod tsx src/app.ts",
         "qstash:local": "NODE_OPTIONS='--dns-result-order=ipv4first' npx @upstash/qstash-cli dev --port 8081",

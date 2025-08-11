@@ -2,9 +2,8 @@
     "compilerOptions": {
         "lib": ["ES2022"],
         "target": "ES2022",
-        "module": "ES2022",
-        "moduleResolution": "Bundler",
-        "sourceMap": true,
+        "module": "commonjs",
+        "moduleResolution": "node",
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
         "strict": true,
@@ -14,8 +13,7 @@
         "resolveJsonModule": true,
         "types": ["node", "express"]
     },
-    "include": ["src/**/*.ts"],
-    "exclude": ["*.config.ts"],
+    "include": ["api/**/*.ts"],
     "experimental": {
         "topLevelAwait": true
     }

@@ -218,7 +218,7 @@ npm run docker_compose_up     # Start database with Docker
 npm run qstash:local         # Start QStash CLI for local development
 ```
 
-## 🏗️ Project Structure
+<!-- ## 🏗️ Project Structure
 
 ```
 subscription-tracker/
@@ -243,7 +243,7 @@ subscription-tracker/
 │   ├── middlewares.ts      # Custom middleware functions
 │   └── ratelimiter.ts     # Rate limiting configuration
 └── clients/               # External service clients
-```
+``` -->
 
 ## 🔐 Security Features
 

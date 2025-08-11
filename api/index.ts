@@ -42,6 +42,6 @@ app.use(errorHandlers);
 if (env === "dev") {
     const port = Number(process.env.SERVER_PORT) || 3000;
     app.listen(port, () => console.log(`${env} server is running on port ${port}`));
-} else {
-    module.exports.handler = serverless(app);
 }
+if (env === "aws") module.exports.handler = serverless(app);
+if (env === "vercel") module.exports = app;

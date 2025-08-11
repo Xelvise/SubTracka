@@ -8,7 +8,7 @@ config({ path: [`.env.${env}`, ".env"] });
 
 let rateLimitMiddleware: RequestHandler;
 
-if (env === "prod") {
+if (env !== "dev") {
     if (!process.env.UPSTASH_REDIS_URL) throw new Error("Upstash Redis URL is required");
     if (!process.env.UPSTASH_REDIS_TOKEN) throw new Error("Upstash Redis Token is required");
 
