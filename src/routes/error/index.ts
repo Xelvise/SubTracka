@@ -1,5 +1,5 @@
 import { Router, Request, Response, NextFunction } from "express";
-import { PostgresError } from "postgres";
+import postgres from "postgres";
 
 const route = Router();
 
@@ -13,7 +13,7 @@ export class CustomError extends Error {
     }
 }
 
-const handlePostgresError = (error: PostgresError) => {
+const handlePostgresError = (error: postgres.PostgresError) => {
     switch (error.code) {
         case "23503": // Foreign key violation
             return {
@@ -52,11 +52,11 @@ route.use((error: Error, req: Request, res: Response, next: NextFunction) => {
     console.error("Error details: ", {
         name: error.name,
         message: error.message,
-        code: error instanceof PostgresError ? error.code : undefined,
+        code: error instanceof postgres.PostgresError ? error.code : undefined,
         stack: error.stack,
     });
     // Handle Postgres errors
-    if (error instanceof PostgresError) {
+    if (error instanceof postgres.PostgresError) {
         const { statusCode, message } = handlePostgresError(error);
         res.status(statusCode).json({ message });
         return;
