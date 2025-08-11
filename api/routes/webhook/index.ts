@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { reminderScheduler, sendEmail } from "./controllers";
+import { pingSupabase, pingUpstashRedis, reminderScheduler, sendEmail } from "./controllers";
 import { requiredBodyValidator, validationResultHandler, verifyWebhook } from "../../utils/middlewares";
 import { body } from "express-validator";
 const route = Router();
@@ -38,5 +38,8 @@ route.post(
     verifyWebhook,
     sendEmail
 );
+
+route.get("/ping/supabase", pingSupabase);
+route.get("/ping/upstash-redis", pingUpstashRedis);
 
 export default route;

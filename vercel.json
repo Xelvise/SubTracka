@@ -11,5 +11,8 @@
         }
     },
 
-    "crons": []
+    "crons": [
+        { "path": "/api/v1/webhooks/ping/upstash-redis", "schedule": "0 12 */10 * *" },
+        { "path": "/api/v1/webhooks/ping/supabase", "schedule": "0 12 */5 * *" }
+    ]
 }

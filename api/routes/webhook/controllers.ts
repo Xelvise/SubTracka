@@ -5,6 +5,8 @@ import { eq } from "drizzle-orm";
 import dayjs from "dayjs";
 import { dayIntervals } from "../../email/constants";
 import { sendReminderEmail, sendPasswordResetEmail, sendWelcomeEmail } from "../../email/handlers";
+import https from "https";
+import { Redis } from "@upstash/redis";
 
 interface Payload {
     [key: string]: any;
@@ -81,4 +83,50 @@ export const sendEmail = (req: Request, res: Response, next: NextFunction) => {
     } catch (error) {
         next(error);
     }
+};
+
+export const pingSupabase = (req: Request) => {
+    const { CRON_SECRET: secret, SUPABASE_ANON_KEY, SUPABASE_URL } = process.env;
+    if (!secret) throw new Error("CRON_SECRET cannot be found");
+    if (!SUPABASE_ANON_KEY || !SUPABASE_URL) throw new Error("Either Supabase Anon Key or Supabase URL was not found");
+
+    const { authorization } = req.headers;
+    if (!authorization || authorization !== `Bearer ${secret}`) {
+        console.error("Authorization failed");
+        return;
+    }
+    const request = https.request(
+        {
+            hostname: SUPABASE_URL,
+            path: "/rest/v1/users",
+            method: "GET",
+            headers: { apikey: SUPABASE_ANON_KEY, authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+        },
+        ({ statusCode }) => {
+            if (!statusCode || ![200, 404].includes(statusCode)) return console.error("❌ Database ping failed");
+            console.log(`✅ Database ping successful (HTTP ${statusCode})`);
+        }
+    );
+    request.on("error", err => console.error(err.message));
+    request.end();
+};
+
+export const pingUpstashRedis = (req: Request) => {
+    const { CRON_SECRET: secret, UPSTASH_REDIS_TOKEN: upstashToken } = process.env;
+    if (!secret) throw new Error("CRON_SECRET cannot be found");
+    if (!upstashToken) throw new Error("UPSTASH_REDIS_TOKEN cannot be found");
+
+    const { authorization } = req.headers;
+    if (!authorization || authorization !== `Bearer ${secret}`) {
+        console.error("Authorization failed");
+        return;
+    }
+    const redis = new Redis({
+        url: "https://lenient-worm-24059.upstash.io",
+        token: upstashToken,
+    });
+    redis
+        .set("ip", req.ip)
+        .then(() => console.log("✅ Redis ping successful"))
+        .catch(err => console.error("❌ Redis ping failed: ", err));
 };

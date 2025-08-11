@@ -19,8 +19,8 @@ provider:
                   Resource:
                       - "arn:aws:ssm:${aws:region}:${aws:accountId}:parameter/sub-tracker/*"
 
-plugins:
-    - serverless-plugin-typescript
+# plugins:
+#     - serverless-plugin-typescript
 
 functions:
     api:
