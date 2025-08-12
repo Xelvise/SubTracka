@@ -8,7 +8,7 @@
         "dev": "NODE_ENV=dev NODE_OPTIONS='--no-deprecation=DEP0040' nodemon --exec tsx src/app.ts",
         "prod": "NODE_ENV=prod tsx src/app.ts",
         "qstash:local": "NODE_OPTIONS='--dns-result-order=ipv4first' npx @upstash/qstash-cli dev --port 8081",
-        "docker_compose_up": "mkdir -p pgdata && sudo chown -R $USER:$USER pgdata && sudo chmod -R 777 pgdata && docker compose --env-file .env.dev up",
+        "docker_compose_up": "docker compose --env-file .env.dev up",
         "introspect_db": "npx drizzle-kit pull",
         "generate_migration": "npx drizzle-kit generate",
         "migrate_schema": "npx drizzle-kit migrate",

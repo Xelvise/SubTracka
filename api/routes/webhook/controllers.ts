@@ -87,21 +87,21 @@ export const sendEmail = (req: Request, res: Response, next: NextFunction) => {
 };
 
 export const pingSupabase = (req: Request) => {
-    const { CRON_SECRET: secret, SUPABASE_ANON_KEY, SUPABASE_URL } = process.env;
-    if (!secret) throw new Error("CRON_SECRET cannot be found");
-    if (!SUPABASE_ANON_KEY || !SUPABASE_URL) throw new Error("Either Supabase Anon Key or Supabase URL was not found");
+    const { CRON_SECRET: cronSecret, SUPABASE_SERVICE_ROLE_KEY } = process.env;
+    if (!cronSecret) throw new Error("CRON_SECRET cannot be found");
+    if (!SUPABASE_SERVICE_ROLE_KEY) throw new Error("Supabase service role key could not be found");
 
     const { authorization } = req.headers;
-    if (!authorization || authorization !== `Bearer ${secret}`) {
+    if (!authorization || authorization !== `Bearer ${cronSecret}`) {
         console.error("Authorization failed");
         return;
     }
     const request = https.request(
         {
-            hostname: SUPABASE_URL,
+            hostname: "tjvjqelyhjayoefsnfqp.supabase.co",
             path: "/rest/v1/users",
             method: "GET",
-            headers: { apikey: SUPABASE_ANON_KEY, authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+            headers: { apikey: SUPABASE_SERVICE_ROLE_KEY, authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
         },
         ({ statusCode }) => {
             if (!statusCode || ![200, 404].includes(statusCode)) return console.error("❌ Database ping failed");
@@ -113,12 +113,12 @@ export const pingSupabase = (req: Request) => {
 };
 
 export const pingUpstashRedis = (req: Request) => {
-    const { CRON_SECRET: secret, UPSTASH_REDIS_TOKEN: upstashToken } = process.env;
-    if (!secret) throw new Error("CRON_SECRET cannot be found");
+    const { CRON_SECRET: cronSecret, UPSTASH_REDIS_TOKEN: upstashToken } = process.env;
+    if (!cronSecret) throw new Error("CRON_SECRET cannot be found");
     if (!upstashToken) throw new Error("UPSTASH_REDIS_TOKEN cannot be found");
 
     const { authorization } = req.headers;
-    if (!authorization || authorization !== `Bearer ${secret}`) {
+    if (!authorization || authorization !== `Bearer ${cronSecret}`) {
         console.error("Authorization failed");
         return;
     }

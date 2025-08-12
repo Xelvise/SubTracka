@@ -3,7 +3,7 @@ name: Ping Supabase
 
 on:
     schedule:
-        - cron: "0 12 */5 * *"
+        - cron: "0 0 * * 0,3"
     workflow_dispatch: # Allows manual triggering for testing
 
 jobs:
@@ -13,13 +13,13 @@ jobs:
         steps:
             - name: Ping Supabase Database
               env:
-                  SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-                  SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+                  SUPABASE_URL: https://tjvjqelyhjayoefsnfqp.supabase.co
+                  SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
               run: |
                   # Simple ping using curl to make a database request
                   response=$(curl -s -o /dev/null -w "%{http_code}" \
-                    -H "apikey: $SUPABASE_ANON_KEY" \
-                    -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+                    -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+                    -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
                     "$SUPABASE_URL/rest/v1/users")
 
                   if [ "$response" -eq 200 ] || [ "$response" -eq 404 ]; then

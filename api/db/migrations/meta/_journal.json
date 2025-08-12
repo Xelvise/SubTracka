@@ -1,48 +1,55 @@
 {
-    "version": "7",
-    "dialect": "postgresql",
-    "entries": [
-        {
-            "idx": 0,
-            "version": "7",
-            "when": 1753069252318,
-            "tag": "0000_shallow_kronos",
-            "breakpoints": true
-        },
-        {
-            "idx": 1,
-            "version": "7",
-            "when": 1753069361873,
-            "tag": "0001_naive_maelstrom",
-            "breakpoints": true
-        },
-        {
-            "idx": 2,
-            "version": "7",
-            "when": 1753114722158,
-            "tag": "0002_loving_yellow_claw",
-            "breakpoints": true
-        },
-        {
-            "idx": 3,
-            "version": "7",
-            "when": 1753374657509,
-            "tag": "0003_peaceful_sharon_ventura",
-            "breakpoints": true
-        },
-        {
-            "idx": 4,
-            "version": "7",
-            "when": 1753385512952,
-            "tag": "0004_absurd_freak",
-            "breakpoints": true
-        },
-        {
-            "idx": 5,
-            "version": "7",
-            "when": 1754118609914,
-            "tag": "0005_parched_leech",
-            "breakpoints": true
-        }
-    ]
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1753069252318,
+      "tag": "0000_shallow_kronos",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1753069361873,
+      "tag": "0001_naive_maelstrom",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1753114722158,
+      "tag": "0002_loving_yellow_claw",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1753374657509,
+      "tag": "0003_peaceful_sharon_ventura",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1753385512952,
+      "tag": "0004_absurd_freak",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1754118609914,
+      "tag": "0005_parched_leech",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1755009798556,
+      "tag": "0006_slimy_orphan",
+      "breakpoints": true
+    }
+  ]
 }
