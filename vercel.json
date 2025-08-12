@@ -3,13 +3,7 @@
 
     "version": 2,
 
-    "functions": {
-        "api/index.ts": {
-            "runtime": "nodejs@22.4.1",
-            "memory": 1024,
-            "maxDuration": 30
-        }
-    },
+    "builds": [{ "src": "api/index.ts", "use": "@vercel/node" }],
 
     "rewrites": [{ "source": "/(.*)", "destination": "/api" }],
 
