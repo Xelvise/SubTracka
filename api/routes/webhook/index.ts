@@ -28,11 +28,7 @@ route.post(
             .withMessage("Type is required")
             .isIn(["password-reset", "welcome"])
             .withMessage("Invalid type"),
-        body("info")
-            .exists({ values: "falsy" })
-            .withMessage("Body info is required")
-            .isJSON()
-            .withMessage("Invalid info"),
+        body("info").exists({ values: "falsy" }).withMessage("Body info is required"),
         validationResultHandler,
     ],
     verifyWebhook,
