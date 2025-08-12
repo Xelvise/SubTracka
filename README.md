@@ -27,7 +27,7 @@ The Subscription Tracker is designed to help users:
 
 ### Cloud & Infrastructure
 
--   **Serverless**: AWS Lambda (via Serverless Framework)
+-   **Serverless**: AWS Lambda (via Serverless Framework) & Vercel functions
 -   **API Gateway**: AWS API Gateway
 -   **Database**: PostgreSQL (local development) / Supabase (production)
 -   **Caching**: Upstash Redis
@@ -53,9 +53,9 @@ The Subscription Tracker is designed to help users:
 
 The application is deployed as a serverless function on AWS Lambda. You can test the API using the following base URL:
 
-**Base URL**: `https://3g1qv6s6fg.execute-api.eu-north-1.amazonaws.com/`
+**Base URL**: `https://sub-tracka.vercel.app/`
 
-Give it a quick try [here](https://3g1qv6s6fg.execute-api.eu-north-1.amazonaws.com)
+Give it a quick try [here](https://sub-tracka.vercel.app/)
 
 ## 📋 Prerequisites
 

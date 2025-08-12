@@ -7,6 +7,7 @@ import { dayIntervals } from "../../email/constants";
 import { sendReminderEmail, sendPasswordResetEmail, sendWelcomeEmail } from "../../email/handlers";
 import https from "https";
 import { Redis } from "@upstash/redis";
+import crypto from "crypto";
 
 interface Payload {
     [key: string]: any;
@@ -125,8 +126,12 @@ export const pingUpstashRedis = (req: Request) => {
         url: "https://lenient-worm-24059.upstash.io",
         token: upstashToken,
     });
+    const digit = crypto.randomBytes(8).toString("hex");
     redis
-        .set("ip", req.ip)
-        .then(() => console.log("✅ Redis ping successful"))
+        .set("digit", digit)
+        .then(() => {
+            console.log("✅ Redis ping successful");
+            redis.expireat(digit, 5000);
+        })
         .catch(err => console.error("❌ Redis ping failed: ", err));
 };
