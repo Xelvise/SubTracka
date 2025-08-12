@@ -70,9 +70,9 @@ export const createSubscription = async (req: Request, res: Response, next: Next
 
         // Trigger an email reminder workflow
         const { workflowRunId } = await workflowClient.trigger({
-            url: req.protocol + "://" + req.headers.host + "/api/v1/webhooks/subscription/reminder",
+            url: "https://" + req.headers.host + "/api/v1/webhooks/subscription/reminder",
             body: { subId: sub.id },
-            retries: 2,
+            retries: 3,
         });
         // Save generated workflowRunId into DB
         const [result] = await db
@@ -165,7 +165,7 @@ export const cancelSubscription = async (req: Request, res: Response, next: Next
         if (result.workflowRunId) await workflowClient.cancel({ ids: result.workflowRunId });
         // Schedule cancellation confirmation email
         await qstashClient.publishJSON({
-            url: req.protocol + "://" + req.headers.host + "/api/v1/webhooks/subscription/send-email",
+            url: "https://" + req.headers.host + "/api/v1/webhooks/subscription/send-email",
             body: { type: "cancellation", info: result },
         });
         res.status(200).json({ message: "Subscription cancelled successfully", data: result });

@@ -41,7 +41,7 @@ export const initiateSignup = async (req: Request, res: Response, next: NextFunc
         });
         // Schedule Welcome email
         await qstashClient.publishJSON({
-            url: req.protocol + "://" + req.headers.host + "/api/v1/webhooks/subscription/send-email",
+            url: "https://" + req.headers.host + "/api/v1/webhooks/subscription/send-email",
             body: {
                 type: "welcome",
                 info: { email: user.email, username: user.username },
@@ -168,7 +168,7 @@ export const initiatePasswordReset = async (req: Request, res: Response, next: N
 
         // Schedule password reset email
         await qstashClient.publishJSON({
-            url: req.protocol + "://" + req.headers.host + "/api/v1/webhooks/subscription/send-email",
+            url: "https://" + req.headers.host + "/api/v1/webhooks/subscription/send-email",
             body: {
                 type: "password-reset",
                 info: {
