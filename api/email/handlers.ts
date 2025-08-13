@@ -89,7 +89,7 @@ export const sendReminderEmail = ({ recipientEmail, tag, subscription }: Reminde
         },
         (error, info) => {
             if (error) throw new CustomError(500, error.message);
-            console.log("Email sent: " + info.response);
+            console.log("Email reminder sent: " + info.response);
         }
     );
 };

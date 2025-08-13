@@ -8,7 +8,6 @@ import { dayIntervals } from "../../email/constants";
 import { sendReminderEmail, sendPasswordResetEmail, sendWelcomeEmail, sendCancelConfirmationEmail } from "../../email/handlers";
 import https from "https";
 import { Redis } from "@upstash/redis";
-import crypto from "crypto";
 import { CustomError } from "../error";
 
 interface Payload {
@@ -29,7 +28,7 @@ export const reminderScheduler = serve<Payload>(async context => {
     });
 
     // Continue execution only if subscription exists
-    if (!subscription) return;
+    if (!subscription) return console.error("Subscription does not exist");
     const renewalDate = dayjs(subscription.nextRenewalDate);
 
     // TODO: Send an email acknowledging subscription has been created
@@ -38,7 +37,7 @@ export const reminderScheduler = serve<Payload>(async context => {
         const reminderDate = renewalDate.subtract(daysBefore, "day");
 
         // If reminder date has past, skip to next interval
-        if (reminderDate.isBefore(dayjs(), "day")) return;
+        if (reminderDate.isBefore(dayjs(), "day")) return console.log("Reminder has past... skipping to next interval");
 
         // If reminder date is ahead of current date, postpone reminder till its true date
         if (reminderDate.isAfter(dayjs(), "day")) {
@@ -56,8 +55,6 @@ export const reminderScheduler = serve<Payload>(async context => {
                     subscription,
                 });
             });
-            console.log("Email reminder sent");
-            return;
         }
     });
 });
@@ -91,52 +88,56 @@ export const sendEmail = (req: Request, res: Response, next: NextFunction) => {
 
 // Define HTTP Webhooks to be triggered by Vercel cron jobs
 
-export const pingSupabase = (req: Request) => {
-    const { CRON_SECRET: cronSecret, SUPABASE_SERVICE_ROLE_KEY } = process.env;
-    if (!cronSecret) throw new Error("CRON_SECRET cannot be found");
-    if (!SUPABASE_SERVICE_ROLE_KEY) throw new Error("Supabase service role key could not be found");
+export const pingSupabase = (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { CRON_SECRET: cronSecret, SUPABASE_SERVICE_ROLE_KEY } = process.env;
+        if (!cronSecret) throw new Error("CRON_SECRET could not be found");
+        if (!SUPABASE_SERVICE_ROLE_KEY) throw new Error("SUPABASE_SERVICE_ROLE_KEY could not be found");
 
-    const { authorization } = req.headers;
-    if (!authorization || authorization !== `Bearer ${cronSecret}`) {
-        console.error("Authorization failed");
-        return;
-    }
-    const request = https.request(
-        {
-            hostname: "tjvjqelyhjayoefsnfqp.supabase.co",
-            path: "/rest/v1/users",
-            method: "GET",
-            headers: { apikey: SUPABASE_SERVICE_ROLE_KEY, authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
-        },
-        ({ statusCode }) => {
-            if (!statusCode || ![200, 404].includes(statusCode)) return console.error("❌ Database ping failed");
-            console.log(`✅ Database ping successful (HTTP ${statusCode})`);
+        const { authorization } = req.headers;
+        if (!authorization || authorization !== `Bearer ${cronSecret}`) {
+            throw new CustomError(401, "Authorization failed");
         }
-    );
-    request.on("error", err => console.error(err.message));
-    request.end();
+        const request = https.request(
+            {
+                hostname: "tjvjqelyhjayoefsnfqp.supabase.co",
+                path: "/rest/v1/users",
+                method: "GET",
+                headers: { apikey: SUPABASE_SERVICE_ROLE_KEY, authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
+            },
+            ({ statusCode }) => {
+                if (!statusCode || ![200, 404].includes(statusCode)) return console.error("❌ Database ping failed");
+                console.log(`✅ Database ping successful (HTTP ${statusCode})`);
+            }
+        );
+        request.on("error", err => console.error(err.message));
+        request.end();
+    } catch (err) {
+        next(err);
+    }
 };
 
-export const pingUpstashRedis = (req: Request) => {
-    const { CRON_SECRET: cronSecret, UPSTASH_REDIS_TOKEN: upstashToken } = process.env;
-    if (!cronSecret) throw new Error("CRON_SECRET cannot be found");
-    if (!upstashToken) throw new Error("UPSTASH_REDIS_TOKEN cannot be found");
+export const pingUpstashRedis = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { CRON_SECRET: cronSecret, UPSTASH_REDIS_TOKEN: redisToken } = process.env;
+        if (!cronSecret) throw new Error("CRON_SECRET could not be found");
+        if (!redisToken) throw new Error("UPSTASH_REDIS_TOKEN could not be found");
 
-    const { authorization } = req.headers;
-    if (!authorization || authorization !== `Bearer ${cronSecret}`) {
-        console.error("Authorization failed");
-        return;
+        const { authorization } = req.headers;
+        if (!authorization || authorization !== `Bearer ${cronSecret}`) {
+            console.error("Authorization failed");
+            return;
+        }
+        const redis = new Redis({
+            url: "https://lenient-worm-24059.upstash.io",
+            token: redisToken,
+        });
+        // Simple ping test
+        redis
+            .ping()
+            .then(value => console.log("✅ Redis connection successful: ", value))
+            .catch(err => console.error("❌ Redis connection failed:", err));
+    } catch (err) {
+        next(err);
     }
-    const redis = new Redis({
-        url: "https://lenient-worm-24059.upstash.io",
-        token: upstashToken,
-    });
-    const digit = crypto.randomBytes(8).toString("hex");
-    redis
-        .set("digit", digit)
-        .then(() => {
-            console.log("✅ Redis ping successful");
-            redis.expireat(digit, 5000);
-        })
-        .catch(err => console.error("❌ Redis ping failed: ", err));
 };

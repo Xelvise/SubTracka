@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { users } from "../../../db";
-import { db } from "../../clients/db";
+import { db, users } from "../../clients/db";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { and, eq, or } from "drizzle-orm";
