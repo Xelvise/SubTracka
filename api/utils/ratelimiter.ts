@@ -4,23 +4,24 @@ import { config } from "dotenv";
 import { RequestHandler } from "express";
 import { rateLimit, ipKeyGenerator } from "express-rate-limit";
 const env = process.env.NODE_ENV || "dev";
-config({ path: [`.env.${env}`, ".env"] });
+config({ path: `.env.${env}` });
 
 let rateLimitMiddleware: RequestHandler;
 
 if (env !== "dev") {
-    if (!process.env.UPSTASH_REDIS_URL) throw new Error("Upstash Redis URL is required");
-    if (!process.env.UPSTASH_REDIS_TOKEN) throw new Error("Upstash Redis Token is required");
+    const { UPSTASH_REDIS_URL, UPSTASH_REDIS_TOKEN, LIMIT, WINDOW } = process.env;
+    if (!UPSTASH_REDIS_URL) console.error("Upstash Redis URL is required");
+    if (!UPSTASH_REDIS_TOKEN) console.error("Upstash Redis Token is required");
 
     // Initialize Upstash Redis for storage
     const storage = new Redis({
-        url: process.env.UPSTASH_REDIS_URL,
-        token: process.env.UPSTASH_REDIS_TOKEN,
+        url: UPSTASH_REDIS_URL,
+        token: UPSTASH_REDIS_TOKEN,
     });
 
     // Enforce delay up to (60/5 = 12)sec between concurrent requests, unless defined otherwise
-    const limit = Number(process.env.LIMIT) || 5;
-    const window = (process.env.WINDOW || "60s") as Duration;
+    const limit = Number(LIMIT) || 5;
+    const window = (WINDOW || "60s") as Duration;
     const ratelimit = new Ratelimit({
         redis: storage,
         limiter: Ratelimit.slidingWindow(limit, window),

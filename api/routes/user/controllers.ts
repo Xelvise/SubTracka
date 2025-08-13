@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
-import { db, users } from "../../db";
+import { users } from "../../../db";
+import { db } from "../../clients/db";
 import { eq } from "drizzle-orm";
 
 export const fetchAllUsers = async (req: Request, res: Response, next: NextFunction) => {

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import { db, users } from "../../db";
+import { users } from "../../../db";
+import { db } from "../../clients/db";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { and, eq, or } from "drizzle-orm";
@@ -9,14 +10,13 @@ import { config } from "dotenv";
 import { qstashClient } from "../../clients/qstash";
 config({ path: `.env.${process.env.NODE_ENV || "dev"}` });
 
-if (!process.env.JWT_SECRET) throw new Error("JWT secret is missing");
-if (!process.env.JWT_REFRESH_SECRET) throw new Error("JWT refresh secret is missing");
-export const jwtSecret = process.env.JWT_SECRET;
-const jwtExpiry = (process.env.JWT_EXPIRY || "10m") as StringValue;
-const jwtRefreshSecret = process.env.JWT_REFRESH_SECRET;
+const { QSTASH_WEBHOOK_SECRET, JWT_SECRET: jwtSecret, JWT_REFRESH_SECRET: jwtRefreshSecret, JWT_EXPIRY } = process.env;
+const jwtExpiry = (JWT_EXPIRY || "10m") as StringValue;
 
 export const initiateSignup = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        if (!QSTASH_WEBHOOK_SECRET) throw new Error("QSTASH_WEBHOOK_SECRET is missing from .env");
+
         const { username, email, password } = req.body;
         const existingUser = await db.query.users.findFirst({
             columns: { username: true, email: true },
@@ -44,6 +44,7 @@ export const initiateSignup = async (req: Request, res: Response, next: NextFunc
             url: "https://" + req.headers.host + "/api/v1/webhooks/subscription/send-email",
             body: {
                 type: "welcome",
+                secret: QSTASH_WEBHOOK_SECRET,
                 info: { email: user.email, username: user.username },
             },
         });
@@ -55,6 +56,9 @@ export const initiateSignup = async (req: Request, res: Response, next: NextFunc
 
 export const initiateLogin = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        if (!jwtSecret) throw new Error("JWT SECRET is missing from .env");
+        if (!jwtRefreshSecret) throw new Error("JWT REFRESH SECRET is missing from .env");
+
         const user = await db.query.users.findFirst({
             columns: { id: true, username: true, email: true, password: true, createdAt: true, updatedAt: true },
             where: eq(users.email, req.body.email),
@@ -87,6 +91,9 @@ export const initiateLogin = async (req: Request, res: Response, next: NextFunct
 
 export const refreshJWT = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        if (!jwtSecret) throw new Error("JWT SECRET is missing from .env");
+        if (!jwtRefreshSecret) throw new Error("JWT REFRESH SECRET is missing from .env");
+
         const cookies = req.cookies;
         if (!cookies?.refreshToken) {
             res.status(401).json({ message: "You are signed out" });
@@ -149,6 +156,8 @@ export const initiateSignout = async (req: Request, res: Response, next: NextFun
 
 export const initiatePasswordReset = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        if (!QSTASH_WEBHOOK_SECRET) throw new Error("QSTASH_WEBHOOK_SECRET is missing from .env");
+
         const user = await db.query.users.findFirst({
             columns: { id: true, email: true },
             where: eq(users.email, req.body.email),
@@ -171,9 +180,10 @@ export const initiatePasswordReset = async (req: Request, res: Response, next: N
             url: "https://" + req.headers.host + "/api/v1/webhooks/subscription/send-email",
             body: {
                 type: "password-reset",
+                secret: QSTASH_WEBHOOK_SECRET,
                 info: {
                     email: user.email,
-                    resetURL: `${req.protocol}://${req.headers.host}/api/v1/auth/${user.id}/password/reset/${resetToken}`,
+                    resetURL: `https://${req.headers.host}/api/v1/auth/${user.id}/password/reset/${resetToken}`,
                     expiry: "30 minutes",
                 },
             },

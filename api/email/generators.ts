@@ -1,4 +1,29 @@
-import { PasswordResetEmail } from "./handlers";
+export const generateWelcomeEmailBody = (username: string) =>
+    `<div>
+        <p>Hey ${username}, you're welcome. I hope you enjoy using SubTracka 😃</p>
+        <br/><br/>
+        <p>Would you love to say Hi to the Creator of SubTracker? Send a <a href="https://wa.me/+2348132198222" style="color: #4a90e2; text-decoration: none;>DM</a>
+    </div>`;
+
+export const generatePasswordResetEmailBody = ({ resetURL, expiry }: { resetURL: string; expiry: string }) =>
+    `<div>
+        <p>Here's your password reset link. It expires in ${expiry} time from now.</p>
+        <br/>
+        ${resetURL}
+        <br/>
+        <p>Given the absence of HTML views in the current version of SubTracker, you are required to make a cURL request to the reset link.</p>
+        <p>Copy and paste in a terminal, replacing "your_new_password" with your own password, as illustrated below: </p>
+        <br/><br/>
+        <p>curl -X POST "${resetURL}" -H "Content-Type: application/json" -d "{\"new_password\": \"your_new_password\"}"</p>
+    </div>`;
+
+export const generateCancelConfirmationEmailBody = (username: string) =>
+    `<div>
+        <p>Hey ${username}, we're deeply sad realising you no longer want to renew your subscription with us.</p>
+        <p>Have a lovely day between!</p>
+        <br/><br/>
+        <p>Would you love to say Hi to the Creator of SubTracker? Send a <a href="https://wa.me/+2348132198222" style="color: #4a90e2; text-decoration: none;>DM</a>
+    </div>`;
 
 export interface EmailData {
     username: string;
@@ -70,21 +95,3 @@ export const generateReminderEmail = ({ username, subName, renewalDate, planName
         </table>
     </div>`
 ;
-
-export const generateWelcomeEmailBody = (username: string) =>
-    `<div>
-        <p>Hey ${username}, you're welcome. I hope you enjoy using SubTracka 😃</p>
-        <br/><br/>
-        <p>Would you love to say Hi to the Creator of SubTracker? Send a <a href="https://wa.me/+2348132198222" style="color: #4a90e2; text-decoration: none;>DM</a>
-    </div>`;
-
-export const generatePasswordResetEmailBody = ({ resetURL, expiry }: Omit<PasswordResetEmail, "recipientEmail">) =>
-    `<div>
-        <p>Here's your password reset URL. It expires in ${expiry} time from now</p>
-        <br/>
-        ${resetURL}
-        <br/>
-        <p>Given the absence of HTML views, you are required to make a POST request to the resetURL (along with your new password) as illustrated below:</p>
-        <br/><br/>
-        <p>curl -X POST ${resetURL} -d '{"new_password": "your_new_password"}'</p> 
-    </div>`;

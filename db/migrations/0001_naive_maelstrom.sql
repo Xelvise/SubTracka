@@ -37,9 +37,7 @@ BEGIN
     SET status = 'expired', 
         renewal_date = NULL,
         updated_at = NOW()
-    WHERE status = 'active' 
-      AND renewal_date IS NOT NULL 
-      AND renewal_date <= CURRENT_DATE;
+    WHERE status = 'active' AND renewal_date IS NOT NULL AND renewal_date <= CURRENT_DATE;
 END;
 $$ LANGUAGE plpgsql;
 

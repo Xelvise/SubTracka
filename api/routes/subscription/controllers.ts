@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import { db, subscriptions } from "../../db";
-import { eq, asc, desc, and, gt, not } from "drizzle-orm";
+import { db, subscriptions } from "../../clients/db";
+import { eq, asc, desc, and, gt } from "drizzle-orm";
 import { qstashClient, workflowClient } from "../../clients/qstash";
 import { config } from "dotenv";
 import dayjs from "dayjs";
@@ -11,6 +11,7 @@ interface QueryParams {
     sort?: "asc" | "desc";
     status?: "active" | "expired" | "cancelled";
 }
+const { QSTASH_WEBHOOK_SECRET } = process.env;
 
 export const fetchUserSubscriptions = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -51,6 +52,8 @@ export const fetchUpcomingSubRenewals = async (req: Request, res: Response, next
 
 export const createSubscription = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        if (!QSTASH_WEBHOOK_SECRET) throw new Error("QSTASH_WEBHOOK_SECRET is missing from .env");
+
         // prettier-ignore
         const { name, price, currency, frequency, category, payment_method: paymentMethod, start_date: startDate } = req.body;
         // TODO: Wrap INSERT and UPDATE operations in a transaction block for a safe rollback
@@ -71,7 +74,10 @@ export const createSubscription = async (req: Request, res: Response, next: Next
         // Trigger an email reminder workflow
         const { workflowRunId } = await workflowClient.trigger({
             url: "https://" + req.headers.host + "/api/v1/webhooks/subscription/reminder",
-            body: { subId: sub.id },
+            body: {
+                secret: QSTASH_WEBHOOK_SECRET,
+                subId: sub.id,
+            },
             retries: 3,
         });
         // Save generated workflowRunId into DB
@@ -140,11 +146,15 @@ export const updateSubscription = async (req: Request, res: Response, next: Next
 
 export const cancelSubscription = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        if (!QSTASH_WEBHOOK_SECRET) throw new Error("QSTASH_WEBHOOK_SECRET is missing from .env");
+
         const { id } = req.params;
         const sub = await db.query.subscriptions.findFirst({
+            with: { user: { columns: { email: true, username: true } } },
             columns: { id: true, userId: true },
             where: eq(subscriptions.id, id),
         });
+
         // Verify that fetched resource exists
         if (!sub) {
             res.status(404).json({ message: "Subscription not found" });
@@ -163,10 +173,15 @@ export const cancelSubscription = async (req: Request, res: Response, next: Next
 
         // Disable subscription reminder workflow for cancelled User, if it exists
         if (result.workflowRunId) await workflowClient.cancel({ ids: result.workflowRunId });
+
         // Schedule cancellation confirmation email
         await qstashClient.publishJSON({
             url: "https://" + req.headers.host + "/api/v1/webhooks/subscription/send-email",
-            body: { type: "cancellation", info: result },
+            body: {
+                secret: QSTASH_WEBHOOK_SECRET,
+                type: "cancel-sub",
+                info: { email: sub.user.email, username: sub.user.username },
+            },
         });
         res.status(200).json({ message: "Subscription cancelled successfully", data: result });
     } catch (error) {

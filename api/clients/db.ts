@@ -1,6 +1,6 @@
-import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
-import * as schema from "./schema";
+import postgres from "postgres";
+import * as schema from "../../db/schema";
 import { config } from "dotenv";
 config({ path: `.env.${process.env.NODE_ENV || "dev"}` });
 
@@ -12,4 +12,4 @@ const client = postgres(connectionString, { prepare: false });
 export const db = drizzle(client, { schema });
 
 // Re-export all schema for convenience
-export * from "./schema";
+export * from "../../db/schema";

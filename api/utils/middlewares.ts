@@ -1,8 +1,8 @@
+import { config } from "dotenv";
 import { Request, Response, NextFunction } from "express";
 import { validationResult } from "express-validator";
 import jwt from "jsonwebtoken";
-import { jwtSecret } from "../routes/auth/controllers";
-import { qstashReceiver } from "../clients/qstash";
+config({ path: `.env.${process.env.NODE_ENV || "dev"}` });
 
 declare global {
     namespace Express {
@@ -29,8 +29,11 @@ export const validationResultHandler = (req: Request, res: Response, next: NextF
     next();
 };
 
-export const verifyJWT = async (req: Request, res: Response, next: NextFunction) => {
+export const verifyJWT = (req: Request, res: Response, next: NextFunction) => {
     try {
+        const { JWT_SECRET: jwtSecret } = process.env;
+        if (!jwtSecret) throw new Error("JWT_SECRET is missing");
+
         let token = req.headers.authorization;
         if (!token || !token.startsWith("Bearer ") || token.split(" ").length !== 2) {
             res.status(401).json({ message: "No or invalid JWT provided" });
@@ -45,29 +48,28 @@ export const verifyJWT = async (req: Request, res: Response, next: NextFunction)
             req.userId = payload.userId;
             next();
         });
-    } catch (error) {
-        next(error);
+    } catch (err) {
+        next(err);
     }
 };
 
-export const verifyWebhook = async (req: Request, res: Response, next: NextFunction) => {
+export const verifyWebhook = (req: Request, res: Response, next: NextFunction) => {
     try {
         const env = process.env.NODE_ENV || "dev";
         if (env === "dev") {
             next();
             return;
         }
-        const status = await qstashReceiver.verify({
-            signature: req.headers["upstash-signature"] as string,
-            body: req.body,
-        });
-        if (!status) {
-            console.log("Unauthorized Webhook request");
+        const { QSTASH_WEBHOOK_SECRET } = process.env;
+        if (!QSTASH_WEBHOOK_SECRET) throw new Error("Qstash Webhook secret is missing");
+
+        if (!req.body.secret || req.body.secret !== QSTASH_WEBHOOK_SECRET) {
+            console.error("Unauthorized Webhook request");
             res.status(401).json({ message: "Unauthorized Webhook request" });
             return;
         }
         next();
-    } catch (error) {
-        next(error);
+    } catch (err) {
+        next(err);
     }
 };

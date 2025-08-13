@@ -67,7 +67,7 @@ route.use((error: Error, req: Request, res: Response, next: NextFunction) => {
         return;
     }
     // Handle other errors
-    res.status(500).json({ message: error.message || "Internal server error" });
+    res.status(500).json({ message: "Internal server error" });
 });
 
 route.use((_, res) => {

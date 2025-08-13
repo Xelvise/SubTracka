@@ -1,13 +1,15 @@
 import { Request, Response, NextFunction } from "express";
 import { serve } from "@upstash/workflow/express";
-import { db, subscriptions } from "../../db";
+import { db, subscriptions } from "../../clients/db";
 import { eq } from "drizzle-orm";
 import dayjs from "dayjs";
 import { dayIntervals } from "../../email/constants";
-import { sendReminderEmail, sendPasswordResetEmail, sendWelcomeEmail } from "../../email/handlers";
+// prettier-ignore
+import { sendReminderEmail, sendPasswordResetEmail, sendWelcomeEmail, sendCancelConfirmationEmail } from "../../email/handlers";
 import https from "https";
 import { Redis } from "@upstash/redis";
 import crypto from "crypto";
+import { CustomError } from "../error";
 
 interface Payload {
     [key: string]: any;
@@ -66,25 +68,28 @@ export const sendEmail = (req: Request, res: Response, next: NextFunction) => {
 
         if (type === "password-reset") {
             const { email: recipientEmail, resetURL, expiry = "30m" } = info;
-            if (!recipientEmail || !resetURL) {
-                res.status(400).json({ message: "Invalid info" });
-                return;
-            }
+            if (!recipientEmail || !resetURL) throw new CustomError(400, "Info is missing required contents");
             sendPasswordResetEmail({ recipientEmail, resetURL, expiry });
+            res.status(200).json({ message: "Email sent successfully" });
         }
         if (type === "welcome") {
             const { email: recipientEmail, username } = info;
-            if (!recipientEmail || !username) {
-                res.status(400).json({ message: "Invalid info" });
-                return;
-            }
+            if (!recipientEmail || !username) throw new CustomError(400, "Info is missing required contents");
             sendWelcomeEmail({ recipientEmail, username });
+            res.status(200).json({ message: "Email sent successfully" });
         }
-        res.status(200).json({ message: "Email sent successfully" });
-    } catch (error) {
-        next(error);
+        if (type === "cancel-sub") {
+            const { email: recipientEmail, username } = info;
+            if (!recipientEmail || !username) throw new CustomError(400, "Info is missing required contents");
+            sendCancelConfirmationEmail({ recipientEmail, username });
+            res.status(200).json({ message: "Email sent successfully" });
+        }
+    } catch (err) {
+        next(err);
     }
 };
+
+// Define HTTP Webhooks to be triggered by Vercel cron jobs
 
 export const pingSupabase = (req: Request) => {
     const { CRON_SECRET: cronSecret, SUPABASE_SERVICE_ROLE_KEY } = process.env;

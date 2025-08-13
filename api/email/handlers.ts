@@ -1,21 +1,17 @@
 import mailer from "../clients/nodemailer";
 import dayjs from "dayjs";
-import { subscriptions } from "../db/schema";
-import { users } from "../db/schema";
+import { subscriptions } from "../../db/schema";
+import { users } from "../../db/schema";
 import { CustomError } from "../routes/error";
-import {
-    EmailData,
-    generatePasswordResetEmailBody,
-    generateReminderEmail,
-    generateWelcomeEmailBody,
-} from "./generators";
+// prettier-ignore
+import { EmailData, generateCancelConfirmationEmailBody, generatePasswordResetEmailBody, generateReminderEmail, generateWelcomeEmailBody } from "./generators";
 import { dayIntervals } from "./constants";
 
-interface WelcomeEmail {
+interface DefaultEmailConfig {
     username: string;
     recipientEmail: string;
 }
-export const sendWelcomeEmail = ({ username, recipientEmail }: WelcomeEmail) => {
+export const sendWelcomeEmail = ({ username, recipientEmail }: DefaultEmailConfig) => {
     const mail = generateWelcomeEmailBody(username);
     mailer.sendMail(
         {
@@ -31,7 +27,7 @@ export const sendWelcomeEmail = ({ username, recipientEmail }: WelcomeEmail) => 
     );
 };
 
-export interface PasswordResetEmail {
+interface PasswordResetEmail {
     recipientEmail: string;
     resetURL: string;
     expiry: string;
@@ -92,7 +88,23 @@ export const sendReminderEmail = ({ recipientEmail, tag, subscription }: Reminde
             html: mail,
         },
         (error, info) => {
-            if (error) return console.log(error, "Error sending email");
+            if (error) throw new CustomError(500, error.message);
+            console.log("Email sent: " + info.response);
+        }
+    );
+};
+
+export const sendCancelConfirmationEmail = ({ username, recipientEmail }: DefaultEmailConfig) => {
+    const mail = generateCancelConfirmationEmailBody(username);
+    mailer.sendMail(
+        {
+            from: process.env.GMAIL_USER,
+            to: recipientEmail,
+            subject: "We hate to see you go 😞",
+            html: mail,
+        },
+        (error, info) => {
+            if (error) throw new CustomError(500, error.message);
             console.log("Email sent: " + info.response);
         }
     );
