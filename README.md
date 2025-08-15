@@ -72,7 +72,7 @@ Before you begin, ensure you have the following installed:
 
 ```bash
 git clone <repository-url>
-cd subscription-tracker
+cd sub-track
 ```
 
 ### 2. Install Dependencies
@@ -195,7 +195,7 @@ The development server will start on `http://localhost:3000`
 -   `nextRenewalDate` (Date)
 -   `createdAt` (Timestamp)
 -   `updatedAt` (Timestamp)
--   `workflowRunId` (Text)
+-   `messageId` (Text)
 
 ## 🔧 Available Scripts
 
@@ -289,6 +289,4 @@ This project is licensed under the ISC License.
 
 **Elvis Gideon**
 
----
-
-For any questions or support, please open an issue in the repository.
+_For any questions or support, please open an issue in the repository._

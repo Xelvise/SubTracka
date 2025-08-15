@@ -1,36 +1,157 @@
 export const generateWelcomeEmailBody = (username: string) =>
-    `<div>
-        <p>Hey ${username}, you're welcome. I hope you enjoy using SubTracka 😃</p>
-        <br/><br/>
-        <p>Would you love to say Hi to the Creator of SubTracker? Send a <a href="https://wa.me/+2348132198222" style="color: #4a90e2; text-decoration: none;>DM</a>
+    `<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 0; background-color: #f4f7fa;">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+            <tr>
+                <td style="background-color: #4a90e2; text-align: center;">
+                    <p style="font-size: 54px; line-height: 54px; font-weight: 800; color: #ffffff; margin: 0;">SubTracka</p>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 40px 30px;">                
+                    <p style="font-size: 16px; margin-bottom: 25px;">Hello <strong style="color: #4a90e2;">${username}</strong>,</p>
+
+                    <p style="font-size: 16px; margin-bottom: 25px;">You're welcome! I hope you enjoy using SubTracka 😃</p>
+
+                    <p style="font-size: 16px; margin-top: 30px;">
+                        Best regards,<br>
+                        <strong>The SubTracka Team</strong>
+                    </p>
+                </td>
+            </tr>
+            <tr>
+                <td style="background-color: #f0f7ff; padding: 20px; text-align: center; font-size: 14px;">
+                    <p style="margin: 0 0 10px;">
+                        SubTracka Inc. | 123 Main St, Anytown, AN 12345
+                    </p>
+                    <p style="margin: 0;">
+                        <a href="#" style="color: #4a90e2; text-decoration: none; margin: 0 10px;">Unsubscribe</a> | 
+                        <a href="#" style="color: #4a90e2; text-decoration: none; margin: 0 10px;">Privacy Policy</a> | 
+                        <a href="#" style="color: #4a90e2; text-decoration: none; margin: 0 10px;">Terms of Service</a>
+                    </p>
+                </td>
+            </tr>
+        </table>
     </div>`;
 
 export const generatePasswordResetEmailBody = ({ resetURL, expiry }: { resetURL: string; expiry: string }) =>
-    `<div>
-        <p>Here's your password reset link. It expires in ${expiry} time from now.</p>
-        <br/>
-        ${resetURL}
-        <br/>
-        <p>Given the absence of HTML views in the current version of SubTracker, you are required to make a cURL request to the reset link.</p>
-        <p>Copy and paste in a terminal, replacing "your_new_password" with your own password, as illustrated below: </p>
-        <br/><br/>
-        <p>curl -X POST "${resetURL}" -H "Content-Type: application/json" -d "{\"new_password\": \"your_new_password\"}"</p>
+    `<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 0; background-color: #f4f7fa;">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+            <tr>
+                <td style="background-color: #4a90e2; text-align: center;">
+                    <p style="font-size: 54px; line-height: 54px; font-weight: 800; color: #ffffff; margin: 0;">SubTracka</p>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 40px 30px;">                
+                    <p style="font-size: 16px; margin-bottom: 25px;">Hello there,</p>
+
+                    <p style="font-size: 16px; margin-bottom: 25px;">Here's your password reset link. It expires in <strong style="color: #4a90e2;">${expiry}</strong> time from now.</p>
+
+                    <div style="background-color: #f0f7ff; border-radius: 10px; padding: 20px; margin-bottom: 25px; text-align: center;">
+                        <a href="${resetURL}" style="color: #4a90e2; text-decoration: none; font-size: 16px; font-weight: bold;">Reset Your Password</a>
+                    </div>
+
+                    <p style="font-size: 16px; margin-bottom: 25px;">Given the absence of HTML views in the current version of SubTracker, you are required to make a cURL request to the reset link.</p>
+                    
+                    <p style="font-size: 16px; margin-bottom: 25px;">Copy and paste in a terminal, replacing "your_new_password" with your own password, as illustrated below:</p>
+
+                    <div style="background-color: #f0f7ff; border-radius: 10px; padding: 20px; margin-bottom: 25px; font-family: monospace; font-size: 14px; overflow-x: auto;">
+                        curl -X POST "${resetURL}" -H "Content-Type: application/json" -d '{"new_password": "your_new_password"}'
+                    </div>
+
+                    <p style="font-size: 16px; margin-top: 30px;">
+                        Best regards,<br>
+                        <strong>The SubTracka Team</strong>
+                    </p>
+                </td>
+            </tr>
+            <tr>
+                <td style="background-color: #f0f7ff; padding: 20px; text-align: center; font-size: 14px;">
+                    <p style="margin: 0 0 10px;">
+                        SubTracka Inc. | 123 Main St, Anytown, AN 12345
+                    </p>
+                    <p style="margin: 0;">
+                        <a href="#" style="color: #4a90e2; text-decoration: none; margin: 0 10px;">Unsubscribe</a> | 
+                        <a href="#" style="color: #4a90e2; text-decoration: none; margin: 0 10px;">Privacy Policy</a> | 
+                        <a href="#" style="color: #4a90e2; text-decoration: none; margin: 0 10px;">Terms of Service</a>
+                    </p>
+                </td>
+            </tr>
+        </table>
     </div>`;
 
 export const generateSubCreationEmailBody = (username: string) =>
-    `<div>
-        <p>Hey ${username}. This is to confirm that you have successfully created a subscription. Watch out for upcoming renewal emails from us</p>
-        <p>Have a lovely day between 👋</p>
-        <br/><br/>
-        <p>Would you love to say Hi to the Creator of SubTracker? Send a <a href="https://wa.me/+2348132198222" style="color: #4a90e2; text-decoration: none;>DM</a>
+    `<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 0; background-color: #f4f7fa;">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+            <tr>
+                <td style="background-color: #4a90e2; text-align: center;">
+                    <p style="font-size: 54px; line-height: 54px; font-weight: 800; color: #ffffff; margin: 0;">SubTracka</p>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 40px 30px;">                
+                    <p style="font-size: 16px; margin-bottom: 25px;">Hello <strong style="color: #4a90e2;">${username}</strong>,</p>
+
+                    <p style="font-size: 16px; margin-bottom: 25px;">This is to confirm that you have successfully created a subscription. Watch out for upcoming renewal emails from us!</p>
+
+                    <p style="font-size: 16px; margin-bottom: 25px;">Have a lovely day! 👋</p>
+
+                    <p style="font-size: 16px; margin-top: 30px;">
+                        Best regards,<br>
+                        <strong>The SubTracka Team</strong>
+                    </p>
+                </td>
+            </tr>
+            <tr>
+                <td style="background-color: #f0f7ff; padding: 20px; text-align: center; font-size: 14px;">
+                    <p style="margin: 0 0 10px;">
+                        SubTracka Inc. | 123 Main St, Anytown, AN 12345
+                    </p>
+                    <p style="margin: 0;">
+                        <a href="#" style="color: #4a90e2; text-decoration: none; margin: 0 10px;">Unsubscribe</a> | 
+                        <a href="#" style="color: #4a90e2; text-decoration: none; margin: 0 10px;">Privacy Policy</a> | 
+                        <a href="#" style="color: #4a90e2; text-decoration: none; margin: 0 10px;">Terms of Service</a>
+                    </p>
+                </td>
+            </tr>
+        </table>
     </div>`;
 
 export const generateSubCancellationEmailBody = (username: string) =>
-    `<div>
-        <p>Hey ${username}, we're deeply sad realising you no longer want to renew your subscription with us.</p>
-        <p>Have a lovely day between 👋</p>
-        <br/><br/>
-        <p>Would you love to say Hi to the Creator of SubTracker? Send a <a href="https://wa.me/+2348132198222" style="color: #4a90e2; text-decoration: none;>DM</a>
+    `<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 0; background-color: #f4f7fa;">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+            <tr>
+                <td style="background-color: #4a90e2; text-align: center;">
+                    <p style="font-size: 54px; line-height: 54px; font-weight: 800; color: #ffffff; margin: 0;">SubTracka</p>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 40px 30px;">                
+                    <p style="font-size: 16px; margin-bottom: 25px;">Hello <strong style="color: #4a90e2;">${username}</strong>,</p>
+
+                    <p style="font-size: 16px; margin-bottom: 25px;">We're deeply sad realizing you no longer want to renew your subscription with us.</p>
+
+                    <p style="font-size: 16px; margin-bottom: 25px;">Have a lovely day! 👋</p>
+
+                    <p style="font-size: 16px; margin-top: 30px;">
+                        Best regards,<br>
+                        <strong>The SubTracka Team</strong>
+                    </p>
+                </td>
+            </tr>
+            <tr>
+                <td style="background-color: #f0f7ff; padding: 20px; text-align: center; font-size: 14px;">
+                    <p style="margin: 0 0 10px;">
+                        SubTracka Inc. | 123 Main St, Anytown, AN 12345
+                    </p>
+                    <p style="margin: 0;">
+                        <a href="#" style="color: #4a90e2; text-decoration: none; margin: 0 10px;">Unsubscribe</a> | 
+                        <a href="#" style="color: #4a90e2; text-decoration: none; margin: 0 10px;">Privacy Policy</a> | 
+                        <a href="#" style="color: #4a90e2; text-decoration: none; margin: 0 10px;">Terms of Service</a>
+                    </p>
+                </td>
+            </tr>
+        </table>
     </div>`;
 
 export interface EmailData {
@@ -51,7 +172,7 @@ export const generateReminderEmail = ({ username, subName, renewalDate, planName
         <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
             <tr>
                 <td style="background-color: #4a90e2; text-align: center;">
-                    <p style="font-size: 54px; line-height: 54px; font-weight: 800;">SubTracker</p>
+                    <p style="font-size: 54px; line-height: 54px; font-weight: 800;">SubTracka</p>
                 </td>
             </tr>
             <tr>
