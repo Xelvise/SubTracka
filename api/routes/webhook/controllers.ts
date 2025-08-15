@@ -37,6 +37,7 @@ export const reminderScheduler = async (req: Request, res: Response, next: NextF
             headers: new Headers({ Authorization: webhookSecret }),
         });
 
+        // Schedule forthcoming reminders
         for (const daysBefore of dayIntervals) {
             const reminderDate = renewalDate.subtract(daysBefore, "day");
 
@@ -69,6 +70,7 @@ export const reminderScheduler = async (req: Request, res: Response, next: NextF
                 });
             }
         }
+        res.status(200).json({ message: "Email sent & reminders scheduled successfully" });
     } catch (err) {
         next(err);
     }

@@ -28,7 +28,7 @@ export const sendWelcomeEmail = ({ username, recipientEmail }: DefaultEmailConfi
                     return;
                 }
                 console.log("Email sent: " + info.response);
-                resolve;
+                resolve(info.response);
             }
         );
     });
@@ -56,7 +56,7 @@ export const sendPasswordResetEmail = async ({ recipientEmail, resetURL, expiry 
                     return;
                 }
                 console.log("Email sent: " + info.response);
-                resolve;
+                resolve(info.response);
             }
         );
     });
@@ -106,7 +106,7 @@ export const sendReminderEmail = ({ recipientEmail, tag, subscription }: Reminde
                     return;
                 }
                 console.log("Email reminder sent: " + info.response);
-                resolve;
+                resolve(info.response);
             }
         );
     });
@@ -129,7 +129,7 @@ export const sendCreationConfirmationEmail = ({ username, recipientEmail }: Defa
                     return;
                 }
                 console.log("Email sent: " + info.response);
-                resolve;
+                resolve(info.response);
             }
         );
     });
@@ -152,7 +152,7 @@ export const sendCancellationConfirmationEmail = ({ username, recipientEmail }: 
                     return;
                 }
                 console.log("Email sent: " + info.response);
-                resolve;
+                resolve(info.response);
             }
         );
     });
