@@ -17,10 +17,18 @@ export const generatePasswordResetEmailBody = ({ resetURL, expiry }: { resetURL:
         <p>curl -X POST "${resetURL}" -H "Content-Type: application/json" -d "{\"new_password\": \"your_new_password\"}"</p>
     </div>`;
 
-export const generateCancelConfirmationEmailBody = (username: string) =>
+export const generateSubCreationEmailBody = (username: string) =>
+    `<div>
+        <p>Hey ${username}. This is to confirm that you have successfully created a subscription. Watch out for upcoming renewal emails from us</p>
+        <p>Have a lovely day between 👋</p>
+        <br/><br/>
+        <p>Would you love to say Hi to the Creator of SubTracker? Send a <a href="https://wa.me/+2348132198222" style="color: #4a90e2; text-decoration: none;>DM</a>
+    </div>`;
+
+export const generateSubCancellationEmailBody = (username: string) =>
     `<div>
         <p>Hey ${username}, we're deeply sad realising you no longer want to renew your subscription with us.</p>
-        <p>Have a lovely day between!</p>
+        <p>Have a lovely day between 👋</p>
         <br/><br/>
         <p>Would you love to say Hi to the Creator of SubTracker? Send a <a href="https://wa.me/+2348132198222" style="color: #4a90e2; text-decoration: none;>DM</a>
     </div>`;

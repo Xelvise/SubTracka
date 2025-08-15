@@ -4,7 +4,7 @@ import { subscriptions } from "../../db/schema";
 import { users } from "../../db/schema";
 import { CustomError } from "../routes/error";
 // prettier-ignore
-import { EmailData, generateCancelConfirmationEmailBody, generatePasswordResetEmailBody, generateReminderEmail, generateWelcomeEmailBody } from "./generators";
+import { EmailData, generateSubCancellationEmailBody, generateSubCreationEmailBody, generatePasswordResetEmailBody, generateReminderEmail, generateWelcomeEmailBody } from "./generators";
 import { dayIntervals } from "./constants";
 
 interface DefaultEmailConfig {
@@ -56,12 +56,10 @@ interface ReminderEmail {
     };
 }
 export const sendReminderEmail = ({ recipientEmail, tag, subscription }: ReminderEmail) => {
+    // prettier-ignore
     const emailTemplates = dayIntervals.map(day => ({
         tag: "day " + day,
-        generateSubject: (subName: string) =>
-            `${day === 1 ? "⚡ Final" : "📅"} Reminder: Your ${subName} Subscription Renews ${
-                day === 1 ? "Tomorrow" : `in ${day} Days!`
-            }`,
+        generateSubject: (subName: string) => `${day === 1 ? "⚡ Final" : "📅"} Reminder: Your ${subName} Subscription Renews ${day === 1 ? "Tomorrow" : `in ${day} Days!`}`,
         generateBody: (data: EmailData) => generateReminderEmail({ ...data, daysLeft: day }),
     }));
 
@@ -94,8 +92,24 @@ export const sendReminderEmail = ({ recipientEmail, tag, subscription }: Reminde
     );
 };
 
-export const sendCancelConfirmationEmail = ({ username, recipientEmail }: DefaultEmailConfig) => {
-    const mail = generateCancelConfirmationEmailBody(username);
+export const sendCreationConfirmationEmail = ({ username, recipientEmail }: DefaultEmailConfig) => {
+    const mail = generateSubCreationEmailBody(username);
+    mailer.sendMail(
+        {
+            from: process.env.GMAIL_USER,
+            to: recipientEmail,
+            subject: "Subscription created",
+            html: mail,
+        },
+        (error, info) => {
+            if (error) throw new CustomError(500, error.message);
+            console.log("Email sent: " + info.response);
+        }
+    );
+};
+
+export const sendCancellationConfirmationEmail = ({ username, recipientEmail }: DefaultEmailConfig) => {
+    const mail = generateSubCancellationEmailBody(username);
     mailer.sendMail(
         {
             from: process.env.GMAIL_USER,

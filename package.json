@@ -2,7 +2,7 @@
     "name": "subscription-tracker",
     "version": "1.0.0",
     "description": "a Subscription tracker",
-    "main": "dist/app.js",
+    "main": "api/index.ts",
     "scripts": {
         "build": "tsc",
         "dev": "NODE_ENV=dev NODE_OPTIONS='--no-deprecation=DEP0040' nodemon --exec tsx src/app.ts",

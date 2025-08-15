@@ -9,12 +9,17 @@ import { config } from "dotenv";
 import { qstashClient } from "../../clients/qstash";
 config({ path: `.env.${process.env.NODE_ENV || "dev"}` });
 
-const { QSTASH_WEBHOOK_SECRET, JWT_SECRET: jwtSecret, JWT_REFRESH_SECRET: jwtRefreshSecret, JWT_EXPIRY } = process.env;
+const {
+    QSTASH_WEBHOOK_SECRET: webhookSecret,
+    JWT_SECRET: jwtSecret,
+    JWT_REFRESH_SECRET: jwtRefreshSecret,
+    JWT_EXPIRY,
+} = process.env;
 const jwtExpiry = (JWT_EXPIRY || "10m") as StringValue;
 
 export const initiateSignup = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (!QSTASH_WEBHOOK_SECRET) throw new Error("QSTASH_WEBHOOK_SECRET is missing from .env");
+        if (!webhookSecret) throw new Error("QSTASH_WEBHOOK_SECRET is missing from .env");
 
         const { username, email, password } = req.body;
         const existingUser = await db.query.users.findFirst({
@@ -43,9 +48,9 @@ export const initiateSignup = async (req: Request, res: Response, next: NextFunc
             url: "https://" + req.headers.host + "/api/v1/webhooks/subscription/send-email",
             body: {
                 type: "welcome",
-                secret: QSTASH_WEBHOOK_SECRET,
                 info: { email: user.email, username: user.username },
             },
+            headers: new Headers({ Authorization: webhookSecret }),
         });
         res.status(201).json({ message: "User created successfully", data: user });
     } catch (error) {
@@ -155,7 +160,7 @@ export const initiateSignout = async (req: Request, res: Response, next: NextFun
 
 export const initiatePasswordReset = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (!QSTASH_WEBHOOK_SECRET) throw new Error("QSTASH_WEBHOOK_SECRET is missing from .env");
+        if (!webhookSecret) throw new Error("QSTASH_WEBHOOK_SECRET is missing from .env");
 
         const user = await db.query.users.findFirst({
             columns: { id: true, email: true },
@@ -179,13 +184,13 @@ export const initiatePasswordReset = async (req: Request, res: Response, next: N
             url: "https://" + req.headers.host + "/api/v1/webhooks/subscription/send-email",
             body: {
                 type: "password-reset",
-                secret: QSTASH_WEBHOOK_SECRET,
                 info: {
                     email: user.email,
                     resetURL: `https://${req.headers.host}/api/v1/auth/${user.id}/password/reset/${resetToken}`,
                     expiry: "30 minutes",
                 },
             },
+            headers: new Headers({ Authorization: webhookSecret }),
         });
         res.status(200).json({ message: "A password reset link has been sent to your email address" });
     } catch (error) {

@@ -60,10 +60,10 @@ export const verifyWebhook = (req: Request, res: Response, next: NextFunction) =
             next();
             return;
         }
-        const { QSTASH_WEBHOOK_SECRET } = process.env;
-        if (!QSTASH_WEBHOOK_SECRET) throw new Error("Qstash Webhook secret is missing");
+        const { QSTASH_WEBHOOK_SECRET: webhookSecret } = process.env;
+        if (!webhookSecret) throw new Error("Qstash Webhook secret is missing");
 
-        if (!req.body.secret || req.body.secret !== QSTASH_WEBHOOK_SECRET) {
+        if (!req.headers.authorization || req.headers.authorization !== webhookSecret) {
             console.error("Unauthorized Webhook request");
             res.status(401).json({ message: "Unauthorized Webhook request" });
             return;

@@ -144,9 +144,9 @@ The development server will start on `http://localhost:3000`
 
 ### Authentication
 
--   `POST /api/v1/auth/sign-up` - User registration
--   `POST /api/v1/auth/sign-in` - User login
--   `DELETE /api/v1/auth/sign-out` - User logout
+-   `POST /api/v1/auth/signup` - User registration
+-   `POST /api/v1/auth/login` - User login
+-   `DELETE /api/v1/auth/logout` - User logout
 -   `GET /api/v1/auth/refresh-jwt` - Refresh JWT token
 -   `POST /api/v1/auth/password/reset` - Request password reset
 -   `POST /api/v1/auth/:id/password/reset/:resetToken` - Reset password
@@ -258,6 +258,7 @@ subscription-tracker/
 
 The application uses Nodemailer with Gmail to send:
 
+-   Subscription cancellation confirmations
 -   Password reset emails
 -   Subscription renewal reminders
 -   Welcome emails

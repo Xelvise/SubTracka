@@ -26,7 +26,7 @@ route.post(
         body("type")
             .exists({ values: "falsy" })
             .withMessage("Type is required")
-            .isIn(["password-reset", "welcome"])
+            .isIn(["password-reset", "welcome", "cancelled-sub", "created-sub"])
             .withMessage("Invalid type"),
         body("info").exists({ values: "falsy" }).withMessage("Body info is required"),
         validationResultHandler,

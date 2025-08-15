@@ -14,7 +14,7 @@ import { requiredBodyValidator } from "../../utils/middlewares";
 const route = Router();
 
 route.post(
-    "/sign-up",
+    "/signup",
     [
         requiredBodyValidator,
         body("username")
@@ -42,7 +42,7 @@ route.post(
 );
 
 route.post(
-    "/sign-in",
+    "/login",
     [
         requiredBodyValidator,
         body("email")
@@ -62,7 +62,7 @@ route.post(
 
 route.get("/refresh-jwt", refreshJWT);
 
-route.delete("/sign-out", verifyJWT, initiateSignout);
+route.delete("/logout", verifyJWT, initiateSignout);
 
 route.post(
     "/password/reset",
