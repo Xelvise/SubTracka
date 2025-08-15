@@ -5,7 +5,7 @@ import { config } from "dotenv";
 config({ path: `.env.${process.env.NODE_ENV || "dev"}` });
 
 const connectionString = process.env.DATABASE_URL;
-if (!connectionString) throw new Error("Database URL is missing");
+if (!connectionString) throw new Error("DATABASE_URL is missing");
 
 // Open a TCP socket to POSTGRES_HOST
 const client = postgres(connectionString, { prepare: false });

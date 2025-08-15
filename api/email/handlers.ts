@@ -13,18 +13,25 @@ interface DefaultEmailConfig {
 }
 export const sendWelcomeEmail = ({ username, recipientEmail }: DefaultEmailConfig) => {
     const mail = generateWelcomeEmailBody(username);
-    mailer.sendMail(
-        {
-            from: process.env.GMAIL_USER,
-            to: recipientEmail,
-            subject: "Welcome to SubTracker 😃",
-            html: mail,
-        },
-        (error, info) => {
-            if (error) throw new CustomError(500, error.message);
-            console.log("Email sent: " + info.response);
-        }
-    );
+
+    return new Promise((resolve, reject) => {
+        mailer.sendMail(
+            {
+                from: process.env.GMAIL_USER,
+                to: recipientEmail,
+                subject: "Welcome to SubTracker 😃",
+                html: mail,
+            },
+            (error, info) => {
+                if (error) {
+                    reject(new CustomError(500, error.message));
+                    return;
+                }
+                console.log("Email sent: " + info.response);
+                resolve;
+            }
+        );
+    });
 };
 
 interface PasswordResetEmail {
@@ -32,20 +39,27 @@ interface PasswordResetEmail {
     resetURL: string;
     expiry: string;
 }
-export const sendPasswordResetEmail = ({ recipientEmail, resetURL, expiry }: PasswordResetEmail) => {
+export const sendPasswordResetEmail = async ({ recipientEmail, resetURL, expiry }: PasswordResetEmail) => {
     const mail = generatePasswordResetEmailBody({ resetURL, expiry });
-    mailer.sendMail(
-        {
-            from: process.env.GMAIL_USER,
-            to: recipientEmail,
-            subject: "Reset password to your SubTracker account",
-            html: mail,
-        },
-        (error, info) => {
-            if (error) throw new CustomError(500, error.message);
-            console.log("Email sent: " + info.response);
-        }
-    );
+
+    return new Promise((resolve, reject) => {
+        mailer.sendMail(
+            {
+                from: process.env.GMAIL_USER,
+                to: recipientEmail,
+                subject: "Reset password to your SubTracker account",
+                html: mail,
+            },
+            (error, info) => {
+                if (error) {
+                    reject(new CustomError(500, error.message));
+                    return;
+                }
+                console.log("Email sent: " + info.response);
+                resolve;
+            }
+        );
+    });
 };
 
 interface ReminderEmail {
@@ -78,48 +92,68 @@ export const sendReminderEmail = ({ recipientEmail, tag, subscription }: Reminde
         paymentMethod,
     });
 
-    mailer.sendMail(
-        {
-            from: process.env.GMAIL_USER,
-            to: recipientEmail,
-            subject: subject,
-            html: mail,
-        },
-        (error, info) => {
-            if (error) throw new CustomError(500, error.message);
-            console.log("Email reminder sent: " + info.response);
-        }
-    );
+    return new Promise((resolve, reject) => {
+        mailer.sendMail(
+            {
+                from: process.env.GMAIL_USER,
+                to: recipientEmail,
+                subject: subject,
+                html: mail,
+            },
+            (error, info) => {
+                if (error) {
+                    reject(new CustomError(500, error.message));
+                    return;
+                }
+                console.log("Email reminder sent: " + info.response);
+                resolve;
+            }
+        );
+    });
 };
 
 export const sendCreationConfirmationEmail = ({ username, recipientEmail }: DefaultEmailConfig) => {
     const mail = generateSubCreationEmailBody(username);
-    mailer.sendMail(
-        {
-            from: process.env.GMAIL_USER,
-            to: recipientEmail,
-            subject: "Subscription created",
-            html: mail,
-        },
-        (error, info) => {
-            if (error) throw new CustomError(500, error.message);
-            console.log("Email sent: " + info.response);
-        }
-    );
+
+    return new Promise((resolve, reject) => {
+        mailer.sendMail(
+            {
+                from: process.env.GMAIL_USER,
+                to: recipientEmail,
+                subject: "Subscription created",
+                html: mail,
+            },
+            (error, info) => {
+                if (error) {
+                    reject(new CustomError(500, error.message));
+                    return;
+                }
+                console.log("Email sent: " + info.response);
+                resolve;
+            }
+        );
+    });
 };
 
 export const sendCancellationConfirmationEmail = ({ username, recipientEmail }: DefaultEmailConfig) => {
     const mail = generateSubCancellationEmailBody(username);
-    mailer.sendMail(
-        {
-            from: process.env.GMAIL_USER,
-            to: recipientEmail,
-            subject: "We hate to see you go 😞",
-            html: mail,
-        },
-        (error, info) => {
-            if (error) throw new CustomError(500, error.message);
-            console.log("Email sent: " + info.response);
-        }
-    );
+
+    return new Promise((resolve, reject) => {
+        mailer.sendMail(
+            {
+                from: process.env.GMAIL_USER,
+                to: recipientEmail,
+                subject: "We hate to see you go 😞",
+                html: mail,
+            },
+            (error, info) => {
+                if (error) {
+                    reject(new CustomError(500, error.message));
+                    return;
+                }
+                console.log("Email sent: " + info.response);
+                resolve;
+            }
+        );
+    });
 };

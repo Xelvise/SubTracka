@@ -74,32 +74,32 @@ export const reminderScheduler = async (req: Request, res: Response, next: NextF
     }
 };
 
-export const sendEmail = (req: Request, res: Response, next: NextFunction) => {
+export const sendEmail = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { type, info } = req.body as { type: string; info: { [key: string]: string } };
 
         if (type === "password-reset") {
             const { email: recipientEmail, resetURL, expiry = "30m" } = info;
             if (!recipientEmail || !resetURL) throw new CustomError(400, "Info is missing required contents");
-            sendPasswordResetEmail({ recipientEmail, resetURL, expiry });
+            await sendPasswordResetEmail({ recipientEmail, resetURL, expiry });
             res.status(200).json({ message: "Email sent successfully" });
         }
         if (type === "welcome") {
             const { email: recipientEmail, username } = info;
             if (!recipientEmail || !username) throw new CustomError(400, "Info is missing required contents");
-            sendWelcomeEmail({ recipientEmail, username });
+            await sendWelcomeEmail({ recipientEmail, username });
             res.status(200).json({ message: "Email sent successfully" });
         }
         if (type === "created-sub") {
             const { email: recipientEmail, username } = info;
             if (!recipientEmail || !username) throw new CustomError(400, "Info is missing required contents");
-            sendCreationConfirmationEmail({ recipientEmail, username });
+            await sendCreationConfirmationEmail({ recipientEmail, username });
             res.status(200).json({ message: "Email sent successfully" });
         }
         if (type === "cancelled-sub") {
             const { email: recipientEmail, username } = info;
             if (!recipientEmail || !username) throw new CustomError(400, "Info is missing required contents");
-            sendCancellationConfirmationEmail({ recipientEmail, username });
+            await sendCancellationConfirmationEmail({ recipientEmail, username });
             res.status(200).json({ message: "Email sent successfully" });
         }
         // Otherwise, express-validator middleware throws a 400 Bad request response
