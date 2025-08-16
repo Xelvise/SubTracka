@@ -31,7 +31,7 @@ export const reminderScheduler = async (req: Request, res: Response, next: NextF
             url: "https://" + req.headers.host + "/api/v1/webhooks/subscription/send-email",
             body: {
                 type: "created-sub",
-                info: { email: sub.user.email, username: sub.user.username },
+                info: { email: sub.user.email, username: sub.user.username, subName: sub.name },
             },
             headers: new Headers({ Authorization: webhookSecret }),
         });
@@ -47,18 +47,16 @@ export const reminderScheduler = async (req: Request, res: Response, next: NextF
 
             // If reminder date is ahead of current date, enqueue reminder to be triggered at the exact date
             if (reminderDate.isAfter(dayjs(), "day")) {
-                const remainingDays = reminderDate.diff(dayjs(), "day");
-                console.log(`${remainingDays} days until trigger of reminder`);
-
-                const { messageId } = await qstashClient.publishJSON({
-                    url: "https://" + req.headers.host + "/api/v1/webhooks/subscription/reminder",
-                    body: { subId: sub.id },
-                    headers: new Headers({ Authorization: webhookSecret }),
-                    delay: `${BigInt(remainingDays)}d`,
+                const { scheduleId } = await qstashClient.schedules.create({
+                    cron: reminderDate.format("m H D M d"),
+                    destination: "https://" + req.headers.host + "/api/v1/webhooks/subscription/reminder",
+                    body: JSON.stringify({ subId: sub.id }),
+                    headers: new Headers({ Authorization: webhookSecret, "Content-Type": "application/json" }),
                 });
+                console.log(`Next Reminder for ${scheduleId} is scheduled to fire on ${reminderDate}`);
 
                 // Save messageId of scheduled reminder into DB for future cancellation, if needed
-                await db.insert(reminders).values({ subId: sub.id, messageId });
+                await db.insert(reminders).values({ subId: sub.id, messageId: scheduleId });
             }
 
             // Trigger reminder, if reminder date is same as current date
@@ -93,9 +91,9 @@ export const sendEmail = async (req: Request, res: Response, next: NextFunction)
             res.status(200).json({ message: "Email sent successfully" });
         }
         if (type === "created-sub") {
-            const { email: recipientEmail, username } = info;
+            const { email: recipientEmail, username, subName } = info;
             if (!recipientEmail || !username) throw new CustomError(400, "Info is missing required contents");
-            await sendCreationConfirmationEmail({ recipientEmail, username });
+            await sendCreationConfirmationEmail({ recipientEmail, username, subName });
             res.status(200).json({ message: "Email sent successfully" });
         }
         if (type === "cancelled-sub") {

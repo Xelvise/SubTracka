@@ -165,16 +165,8 @@ export const cancelSubscription = async (req: Request, res: Response, next: Next
             if (!QSTASH_URL || !QSTASH_TOKEN) throw new Error("One or both of QSTASH credentials is missing");
             const messageIds = scheduledReminders.map(reminder => reminder.messageId);
 
-            const response = await fetch(`${QSTASH_URL}/v2/messages`, {
-                method: "DELETE",
-                headers: new Headers({ Authorization: `Bearer ${QSTASH_TOKEN}`, "Content-Type": "application/json" }),
-                body: JSON.stringify({ messageIds }),
-            });
-            if (!response.ok) {
-                // prettier-ignore
-                console.error(`Unable to cancel scheduled reminders using QStash API: ${response.status} - ${await response.text()}`);
-                res.status(500).json({ message: "Unable to cancel scheduled reminders right now" });
-                return;
+            for (const id of messageIds) {
+                await qstashClient.schedules.delete(id);
             }
             // Schedule cancellation confirmation email
             await qstashClient.publishJSON({
@@ -226,16 +218,8 @@ export const deleteSubscription = async (req: Request, res: Response, next: Next
             if (!QSTASH_URL || !QSTASH_TOKEN) throw new Error("One or both of QSTASH credentials is missing");
             const messageIds = scheduledReminders.map(reminder => reminder.messageId);
 
-            const response = await fetch(`${QSTASH_URL}/v2/messages`, {
-                method: "DELETE",
-                headers: new Headers({ Authorization: `Bearer ${QSTASH_TOKEN}`, "Content-Type": "application/json" }),
-                body: JSON.stringify({ messageIds }),
-            });
-            if (!response.ok) {
-                // prettier-ignore
-                console.error(`Unable to cancel scheduled reminders using QStash API: ${response.status} - ${await response.text()}`);
-                res.status(500).json({ message: "Unable to cancel scheduled reminders right now" });
-                return;
+            for (const id of messageIds) {
+                await qstashClient.schedules.delete(id);
             }
             // Schedule cancellation confirmation email
             await qstashClient.publishJSON({

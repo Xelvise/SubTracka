@@ -73,7 +73,7 @@ export const sendReminderEmail = ({ recipientEmail, tag, subscription }: Reminde
     // prettier-ignore
     const emailTemplates = dayIntervals.map(day => ({
         tag: "day " + day,
-        generateSubject: (subName: string) => `${day === 1 ? "⚡ Final" : "📅"} Reminder: Your ${!subName.toLowerCase().includes("subscription") ? "subscription" : "" } renews ${day === 1 ? "Tomorrow" : `in ${day} days!`}`,
+        generateSubject: (subName: string) => `${day === 1 ? "⚡ Final" : "📅"} Reminder: Your ${subName.toLowerCase().endsWith("subscription") ? subName : `${subName} subscription`} renews ${day === 1 ? "Tomorrow" : `in ${day} days!`}`,
         generateBody: (data: EmailData) => generateReminderEmail({ ...data, daysLeft: day }),
     }));
 
@@ -112,8 +112,9 @@ export const sendReminderEmail = ({ recipientEmail, tag, subscription }: Reminde
     });
 };
 
-export const sendCreationConfirmationEmail = ({ username, recipientEmail }: DefaultEmailConfig) => {
-    const mail = generateSubCreationEmailBody(username);
+// prettier-ignore
+export const sendCreationConfirmationEmail = ({ username, recipientEmail, subName }: DefaultEmailConfig & { subName: string }) => {
+    const mail = generateSubCreationEmailBody(username, subName);
 
     return new Promise((resolve, reject) => {
         mailer.sendMail(
