@@ -46,18 +46,37 @@ export const subscriptions = pgTable(
         nextRenewalDate: date("renewal_date"),
         createdAt: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull().defaultNow(),
         updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" }).notNull().$onUpdateFn(() => sql`NOW()`),
-        messageId: text("worflow_run_id")
     },
     () => [check("start_date_validity_check", sql`start_date >= CURRENT_DATE`)]
 ).enableRLS();
 
+// prettier-ignore
+export const reminders = pgTable(
+    "reminders",
+    {
+        id: uuid().primaryKey().notNull().default(sql`gen_random_uuid()`),
+        subId: uuid("sub_id").notNull().references(() => subscriptions.id, { onDelete: "cascade" }),
+        messageId: text("message_id").notNull(),
+        createdAt: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull().defaultNow(),
+        updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" }).notNull().$onUpdateFn(() => sql`NOW()`),
+    }
+).enableRLS();
+
 export const userRelations = relations(users, ({ many }) => ({
-    subs: many(subscriptions),
+    subscription: many(subscriptions),
 }));
 
-export const subRelations = relations(subscriptions, ({ one }) => ({
+export const subRelations = relations(subscriptions, ({ one, many }) => ({
     user: one(users, {
         fields: [subscriptions.userId],
         references: [users.id],
+    }),
+    reminder: many(reminders),
+}));
+
+export const reminderRelations = relations(reminders, ({ one }) => ({
+    subscription: one(subscriptions, {
+        fields: [reminders.subId],
+        references: [subscriptions.id],
     }),
 }));

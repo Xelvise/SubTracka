@@ -47,7 +47,7 @@ export const sendPasswordResetEmail = async ({ recipientEmail, resetURL, expiry 
             {
                 from: process.env.GMAIL_USER,
                 to: recipientEmail,
-                subject: "Reset password to your SubTracker account",
+                subject: "SubTracka Password reset",
                 html: mail,
             },
             (error, info) => {
@@ -73,7 +73,7 @@ export const sendReminderEmail = ({ recipientEmail, tag, subscription }: Reminde
     // prettier-ignore
     const emailTemplates = dayIntervals.map(day => ({
         tag: "day " + day,
-        generateSubject: (subName: string) => `${day === 1 ? "⚡ Final" : "📅"} Reminder: Your ${subName} Subscription Renews ${day === 1 ? "Tomorrow" : `in ${day} Days!`}`,
+        generateSubject: (subName: string) => `${day === 1 ? "⚡ Final" : "📅"} Reminder: Your ${!subName.toLowerCase().includes("subscription") ? "subscription" : "" } renews ${day === 1 ? "Tomorrow" : `in ${day} days!`}`,
         generateBody: (data: EmailData) => generateReminderEmail({ ...data, daysLeft: day }),
     }));
 

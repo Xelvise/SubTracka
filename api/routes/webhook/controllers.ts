@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { serve } from "@upstash/workflow/express";
-import { db, subscriptions } from "../../clients/db";
+import { db, reminders, subscriptions } from "../../clients/db";
 import { eq } from "drizzle-orm";
 import dayjs from "dayjs";
 import { dayIntervals } from "../../email/constants";
@@ -57,8 +56,9 @@ export const reminderScheduler = async (req: Request, res: Response, next: NextF
                     headers: new Headers({ Authorization: webhookSecret }),
                     delay: `${BigInt(remainingDays)}d`,
                 });
-                // Save generated messageId into DB for future cancellation, if needed
-                await db.update(subscriptions).set({ messageId }).where(eq(subscriptions.id, sub.id));
+
+                // Save messageId of scheduled reminder into DB for future cancellation, if needed
+                await db.insert(reminders).values({ subId: sub.id, messageId });
             }
 
             // Trigger reminder, if reminder date is same as current date

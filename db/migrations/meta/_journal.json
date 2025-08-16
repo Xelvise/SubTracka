@@ -50,6 +50,13 @@
       "when": 1755009798556,
       "tag": "0006_slimy_orphan",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1755330112215,
+      "tag": "0007_quiet_rumiko_fujikawa",
+      "breakpoints": true
     }
   ]
 }

@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import { db, subscriptions } from "../../clients/db";
+import { db, reminders, subscriptions } from "../../clients/db";
 import { eq, asc, desc, and, gt } from "drizzle-orm";
-import { qstashClient, workflowClient } from "../../clients/qstash";
+import { qstashClient } from "../../clients/qstash";
 import { config } from "dotenv";
 import dayjs from "dayjs";
 config({ path: `.env.${process.env.NODE_ENV || "dev"}` });
@@ -52,10 +52,9 @@ export const fetchUpcomingSubRenewals = async (req: Request, res: Response, next
 
 export const createSubscription = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (!webhookSecret) throw new Error("QSTASH_WEBHOOK_SECRET is missing from .env");
+        if (!webhookSecret) throw new Error("QSTASH_WEBHOOK_SECRET is missing");
         // prettier-ignore
         const { name, price, currency, frequency, category, payment_method: paymentMethod, start_date: startDate } = req.body;
-        // TODO: Wrap INSERT and UPDATE operations in a transaction block to ensure safe rollback
         const [sub] = await db
             .insert(subscriptions)
             .values({
@@ -68,22 +67,15 @@ export const createSubscription = async (req: Request, res: Response, next: Next
                 paymentMethod,
                 startDate,
             })
-            .returning({ id: subscriptions.id });
+            .returning();
 
         // Trigger an email reminder workflow
-        const { messageId } = await qstashClient.publishJSON({
+        await qstashClient.publishJSON({
             url: "https://" + req.headers.host + "/api/v1/webhooks/subscription/reminder",
             body: { subId: sub.id },
             headers: new Headers({ Authorization: webhookSecret }),
         });
-        // Save generated messageId into DB
-        const [result] = await db
-            .update(subscriptions)
-            .set({ messageId })
-            .where(eq(subscriptions.id, sub.id))
-            .returning();
-
-        res.status(201).json({ message: "Subscription created successfully", data: result });
+        res.status(201).json({ message: "Subscription created successfully", data: sub });
     } catch (error) {
         next(error);
     }
@@ -142,12 +134,12 @@ export const updateSubscription = async (req: Request, res: Response, next: Next
 
 export const cancelSubscription = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (!webhookSecret) throw new Error("QSTASH_WEBHOOK_SECRET is missing from .env");
+        if (!webhookSecret) throw new Error("QSTASH_WEBHOOK_SECRET is missing");
 
         const { id } = req.params;
         const sub = await db.query.subscriptions.findFirst({
             with: { user: { columns: { email: true, username: true } } },
-            columns: { id: true, userId: true },
+            columns: { id: true, userId: true, status: true },
             where: eq(subscriptions.id, id),
         });
 
@@ -161,30 +153,48 @@ export const cancelSubscription = async (req: Request, res: Response, next: Next
             res.status(403).json({ message: "Unauthorized access" });
             return;
         }
+        // Verify that subscription hasn't be cancelled before
+        if (sub.status === "cancelled") {
+            res.status(200).json({ message: "Subscription has already been cancelled" });
+            return;
+        }
+
+        // Cancel and delete any scheduled reminder associated with subscription, if it exists
+        const scheduledReminders = await db.query.reminders.findMany({ where: eq(reminders.subId, sub.id) });
+        if (scheduledReminders.length > 0) {
+            if (!QSTASH_URL || !QSTASH_TOKEN) throw new Error("One or both of QSTASH credentials is missing");
+            const messageIds = scheduledReminders.map(reminder => reminder.messageId);
+
+            const response = await fetch(`${QSTASH_URL}/v2/messages`, {
+                method: "DELETE",
+                headers: new Headers({ Authorization: `Bearer ${QSTASH_TOKEN}`, "Content-Type": "application/json" }),
+                body: JSON.stringify({ messageIds }),
+            });
+            if (!response.ok) {
+                // prettier-ignore
+                console.error(`Unable to cancel scheduled reminders using QStash API: ${response.status} - ${await response.text()}`);
+                res.status(500).json({ message: "Unable to cancel scheduled reminders right now" });
+                return;
+            }
+            // Schedule cancellation confirmation email
+            await qstashClient.publishJSON({
+                url: "https://" + req.headers.host + "/api/v1/webhooks/subscription/send-email",
+                body: {
+                    type: "cancelled-sub",
+                    info: { email: sub.user.email, username: sub.user.username },
+                },
+                headers: new Headers({ Authorization: webhookSecret }),
+            });
+            // Delete all cancelled reminders, so there won't be need to re-cancel
+            await db.delete(reminders).where(eq(reminders.subId, sub.id));
+        }
+
+        // Cancel User subscription
         const [result] = await db
             .update(subscriptions)
             .set({ status: "cancelled" })
             .where(eq(subscriptions.id, sub.id))
             .returning();
-
-        // Disable/Cancel subscription reminder workflow for cancelled User, if it exists
-        if (result.messageId) {
-            if (!QSTASH_URL || !QSTASH_TOKEN) throw new Error("One or both of QSTASH credentials is missing");
-            await fetch(`${QSTASH_URL}/v2/messages/${result.messageId}`, {
-                method: "DELETE",
-                headers: new Headers({ Authorization: `Bearer ${QSTASH_TOKEN}` }),
-            });
-        }
-
-        // Schedule cancellation confirmation email
-        await qstashClient.publishJSON({
-            url: "https://" + req.headers.host + "/api/v1/webhooks/subscription/send-email",
-            body: {
-                type: "cancelled-sub",
-                info: { email: sub.user.email, username: sub.user.username },
-            },
-            headers: new Headers({ Authorization: webhookSecret }),
-        });
         res.status(200).json({ message: "Subscription cancelled successfully", data: result });
     } catch (error) {
         next(error);
@@ -195,6 +205,7 @@ export const deleteSubscription = async (req: Request, res: Response, next: Next
     try {
         const { id } = req.params;
         const sub = await db.query.subscriptions.findFirst({
+            with: { user: { columns: { email: true, username: true } } },
             columns: { id: true, userId: true },
             where: eq(subscriptions.id, id),
         });
@@ -208,19 +219,36 @@ export const deleteSubscription = async (req: Request, res: Response, next: Next
             res.status(403).json({ message: "Unauthorized access" });
             return;
         }
-        // Disable/Cancel subscription reminder workflow for deleted User, if it exists
-        const [{ messageId }] = await db
-            .delete(subscriptions)
-            .where(eq(subscriptions.id, sub.id))
-            .returning({ messageId: subscriptions.messageId });
 
-        if (messageId) {
+        // Cancel and delete any scheduled reminder associated with subscription, if it exists
+        const scheduledReminders = await db.query.reminders.findMany({ where: eq(reminders.subId, sub.id) });
+        if (scheduledReminders.length > 0) {
             if (!QSTASH_URL || !QSTASH_TOKEN) throw new Error("One or both of QSTASH credentials is missing");
-            await fetch(`${QSTASH_URL}/v2/messages/${messageId}`, {
+            const messageIds = scheduledReminders.map(reminder => reminder.messageId);
+
+            const response = await fetch(`${QSTASH_URL}/v2/messages`, {
                 method: "DELETE",
-                headers: new Headers({ Authorization: `Bearer ${QSTASH_TOKEN}` }),
+                headers: new Headers({ Authorization: `Bearer ${QSTASH_TOKEN}`, "Content-Type": "application/json" }),
+                body: JSON.stringify({ messageIds }),
+            });
+            if (!response.ok) {
+                // prettier-ignore
+                console.error(`Unable to cancel scheduled reminders using QStash API: ${response.status} - ${await response.text()}`);
+                res.status(500).json({ message: "Unable to cancel scheduled reminders right now" });
+                return;
+            }
+            // Schedule cancellation confirmation email
+            await qstashClient.publishJSON({
+                url: "https://" + req.headers.host + "/api/v1/webhooks/subscription/send-email",
+                body: {
+                    type: "cancelled-sub",
+                    info: { email: sub.user.email, username: sub.user.username },
+                },
+                headers: new Headers({ Authorization: webhookSecret }),
             });
         }
+        // Delete User subscription which in turn deletes associated reminders, if any
+        await db.delete(subscriptions).where(eq(subscriptions.id, sub.id));
         res.status(200).json({ message: "Subscription deleted successfully" });
     } catch (error) {
         next(error);
