@@ -19,7 +19,7 @@ export const sendWelcomeEmail = ({ username, recipientEmail }: DefaultEmailConfi
             {
                 from: process.env.GMAIL_USER,
                 to: recipientEmail,
-                subject: "Welcome to SubTracker 😃",
+                subject: "Welcome to SubTracka 😃",
                 html: mail,
             },
             (error, info) => {

@@ -19,7 +19,7 @@ const jwtExpiry = (JWT_EXPIRY || "10m") as StringValue;
 
 export const initiateSignup = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (!webhookSecret) throw new Error("QSTASH_WEBHOOK_SECRET is missing from .env");
+        if (!webhookSecret) throw new Error("QSTASH_WEBHOOK_SECRET is missing");
 
         const { username, email, password } = req.body;
         const existingUser = await db.query.users.findFirst({
@@ -60,8 +60,8 @@ export const initiateSignup = async (req: Request, res: Response, next: NextFunc
 
 export const initiateLogin = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (!jwtSecret) throw new Error("JWT SECRET is missing from .env");
-        if (!jwtRefreshSecret) throw new Error("JWT REFRESH SECRET is missing from .env");
+        if (!jwtSecret) throw new Error("JWT SECRET is missing");
+        if (!jwtRefreshSecret) throw new Error("JWT REFRESH SECRET is missing");
 
         const user = await db.query.users.findFirst({
             columns: { id: true, username: true, email: true, password: true, createdAt: true, updatedAt: true },
@@ -95,8 +95,8 @@ export const initiateLogin = async (req: Request, res: Response, next: NextFunct
 
 export const refreshJWT = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (!jwtSecret) throw new Error("JWT SECRET is missing from .env");
-        if (!jwtRefreshSecret) throw new Error("JWT REFRESH SECRET is missing from .env");
+        if (!jwtSecret) throw new Error("JWT SECRET is missing");
+        if (!jwtRefreshSecret) throw new Error("JWT REFRESH SECRET is missing");
 
         const cookies = req.cookies;
         if (!cookies?.refreshToken) {
@@ -160,7 +160,7 @@ export const initiateSignout = async (req: Request, res: Response, next: NextFun
 
 export const initiatePasswordReset = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (!webhookSecret) throw new Error("QSTASH_WEBHOOK_SECRET is missing from .env");
+        if (!webhookSecret) throw new Error("QSTASH_WEBHOOK_SECRET is missing");
 
         const user = await db.query.users.findFirst({
             columns: { id: true, email: true },
