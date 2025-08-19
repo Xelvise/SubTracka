@@ -13,7 +13,7 @@ import { qstashClient } from "../../clients/qstash";
 export const reminderScheduler = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { QSTASH_WEBHOOK_SECRET: webhookSecret } = process.env;
-        if (!webhookSecret) throw new Error("QSTASH_WEBHOOK_SECRET is missing from .env");
+        if (!webhookSecret) throw new Error("QSTASH_WEBHOOK_SECRET is missing");
 
         // Retrieve subscription info along with its creator
         const sub = await db.query.subscriptions.findFirst({
@@ -25,16 +25,6 @@ export const reminderScheduler = async (req: Request, res: Response, next: NextF
         // Continue execution only if subscription exists
         if (!sub) throw new CustomError(404, "Subscription does not exist");
         const renewalDate = dayjs(sub.nextRenewalDate);
-
-        // Send an email acknowledging subscription has been created
-        await qstashClient.publishJSON({
-            url: "https://" + req.headers.host + "/api/v1/webhooks/subscription/send-email",
-            body: {
-                type: "created-sub",
-                info: { email: sub.user.email, username: sub.user.username, subName: sub.name },
-            },
-            headers: new Headers({ Authorization: webhookSecret }),
-        });
 
         // Schedule forthcoming reminders
         for (const daysBefore of dayIntervals) {

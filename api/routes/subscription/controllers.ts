@@ -1,9 +1,10 @@
 import { Request, Response, NextFunction } from "express";
-import { db, reminders, subscriptions } from "../../clients/db";
+import { db, reminders, subscriptions, users } from "../../clients/db";
 import { eq, asc, desc, and, gt } from "drizzle-orm";
 import { qstashClient } from "../../clients/qstash";
 import { config } from "dotenv";
 import dayjs from "dayjs";
+import { CustomError } from "../error";
 config({ path: `.env.${process.env.NODE_ENV || "dev"}` });
 
 interface QueryParams {
@@ -55,6 +56,12 @@ export const createSubscription = async (req: Request, res: Response, next: Next
         if (!webhookSecret) throw new Error("QSTASH_WEBHOOK_SECRET is missing");
         // prettier-ignore
         const { name, price, currency, frequency, category, payment_method: paymentMethod, start_date: startDate } = req.body;
+        const user = await db.query.users.findFirst({
+            columns: { username: true, email: true },
+            where: eq(users.id, req.userId),
+        });
+        if (!user) throw new CustomError(404, "User not found");
+
         const [sub] = await db
             .insert(subscriptions)
             .values({
@@ -69,12 +76,22 @@ export const createSubscription = async (req: Request, res: Response, next: Next
             })
             .returning();
 
-        // Trigger an email reminder workflow
+        // Send an email acknowledging subscription has been created
+        await qstashClient.publishJSON({
+            url: "https://" + req.headers.host + "/api/v1/webhooks/subscription/send-email",
+            body: {
+                type: "created-sub",
+                info: { email: user.email, username: user.username, subName: sub.name },
+            },
+            headers: new Headers({ Authorization: webhookSecret }),
+        });
+        // Trigger an email reminder workflow afterwards
         await qstashClient.publishJSON({
             url: "https://" + req.headers.host + "/api/v1/webhooks/subscription/reminder",
             body: { subId: sub.id },
             headers: new Headers({ Authorization: webhookSecret }),
         });
+
         res.status(201).json({ message: "Subscription created successfully", data: sub });
     } catch (error) {
         next(error);
